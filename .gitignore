@@ -1,6 +1,7 @@
 #data/
 #models/
 notebooks/CarPartsDatasetExperimentDir/
+logs/
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm+all,jupyternotebooks,virtualenv,venv

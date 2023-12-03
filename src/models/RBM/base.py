@@ -1,3 +1,4 @@
+import cv2
 import torch
 from torch import nn
 import torchvision
@@ -5,8 +6,11 @@ from torch.utils.tensorboard import SummaryWriter
 from src.settings import DEVICE
 from torch.utils.data import DataLoader
 from door_data import DoorsDataset2, door_transforms
+import torchvision.transforms as T
+from PIL import Image
 
-# summary_writer = SummaryWriter()
+
+summary_writer = SummaryWriter("../../../logs/runs/")
 
 
 class RBM(nn.Module):
@@ -27,18 +31,22 @@ class RBM(nn.Module):
 
     def sample_h_from_v(self, v0):
         phv = torch.sigmoid(nn.functional.linear(v0, self.weight, self.bias_h))
-        h = nn.functional.relu(phv)
+        # h = nn.functional.relu(phv)
+        h = torch.bernoulli(phv)
         return h, phv
 
     def sample_v_from_h(self, h0):
         pvh = torch.sigmoid(nn.functional.linear(h0, self.weight.T, self.bias_v))
-        v = nn.functional.relu(pvh)
+        # v = nn.functional.relu(pvh)
+        v = torch.bernoulli(pvh)
         return v, pvh
 
-    def forward(self, v):
+    def forward(self, v, k=None):
+        if not k:
+            k = self._k
         h, phv = self.sample_h_from_v(v)
         # CD-k algo
-        for i in range(self._k):
+        for i in range(k):
             v, pvh = self.sample_v_from_h(phv)
             h, phv = self.sample_h_from_v(v)
         v, pvh = self.sample_v_from_h(phv)
@@ -72,9 +80,11 @@ def train(model, data_loader, lr, epochs_number: int, optimizer, *args, **kwargs
             loss.backward()
             optimizer.step()
 
-        # summary_writer.add_scalar("loss", total_loss_by_epoch, epoch)
+        summary_writer.add_scalar("loss", total_loss_by_epoch, epoch)
         print('Epoch [{}/{}] --> loss: {:.4f}'.format(epoch + 1, epochs_number, total_loss_by_epoch))
 
+
+summary_writer.close()
 
 if __name__ == "__main__":
     datas = DoorsDataset2(
@@ -84,5 +94,21 @@ if __name__ == "__main__":
     )
     train_loader = DataLoader(dataset=datas, batch_size=1, shuffle=True)
 
-    my_model = RBM(32*32, 32*32)
-    train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
+    my_model = RBM(32*32, 32*32*2, k=33*9)
+    train(my_model, train_loader, 0.001, 80, torch.optim.SGD)
+
+    datas_test = DoorsDataset2(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+        transform=door_transforms
+    )
+
+    test = datas_test[0]
+    print(f"TEST IMAGE SHAPE {test.shape}")
+    make_visible = T.ToPILImage()
+    make_visible(test).show()
+    test = test.reshape((-1, 1024))
+    test = test.to(DEVICE)
+    recon = my_model.forward(test)
+    recon = recon.reshape((32, 32))
+    make_visible(recon).show()
