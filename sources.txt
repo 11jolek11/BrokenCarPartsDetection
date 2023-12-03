@@ -1,0 +1,78 @@
+# Wiedza
+https://www.youtube.com/watch?v=ZjM_XQa5s6s
+https://www.youtube.com/watch?v=HGwBXDKFk9I
+https://www.youtube.com/watch?v=KuXjwB4LzSA&t=939s
+https://deeplizard.com/resource/pavq7noze2
+https://www.youtube.com/watch?v=ZjM_XQa5s6s
+https://towardsdatascience.com/unet-line-by-line-explanation-9b191c76baf5
+https://openreview.net/pdf?id=SypU81Ole
+https://pub.towardsai.net/introduction-to-autoregressive-models-4f0f075f6a53
+
+# Segmentacja
+
+https://github.com/dsmlr/Car-Parts-Segmentation
+https://armandolivares.tech/2022/09/09/how-to-train-a-segmentation-model-for-car-parts/
+
+https://armandolivares.tech/2022/09/09/how-to-train-a-segmentation-model-for-car-parts/
+https://github.com/ArmandDS/blog-post/blob/main/computer-vision/blog_segmentation.ipynb
+
+https://universe.roboflow.com/models/instance-segmentation
+
+https://huggingface.co/datasets/Unit293/car_models_3887/tree/main
+
+https://github.com/hamdaan19/UNet-Multiclass
+https://github.com/mcordts/cityscapesScripts/tree/master
+https://github.com/hamdaan19/UNet-Multiclass/blob/main/scripts/train.py
+
+https://github.com/qubvel/segmentation_models.pytorch
+
+https://github.com/kanezaki/pytorch-unsupervised-segmentation/blob/master/demo.py
+
+# Rekonstrukcja
+
+https://docs.google.com/presentation/d/1OJd1trewTICi2fvqXplFXzCmJUi5oasLpBMrKPlG6XM/edit?usp=sharing
+
+https://www.jeremyjordan.me/variational-autoencoders/
+
+https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial12/Autoregressive_Image_Modeling.html <-- Autocompletion
+
+BOLTZMAN network
+(sieci odtwarzające)
+I RBF
+Hopfman network
+
+https://en.wikipedia.org/wiki/Hopfield_network
+boltzman networks
+https://en.wikipedia.org/wiki/Boltzmann_machine
+https://en.wikipedia.org/wiki/Restricted_Boltzmann_machine
+
+https://www.youtube.com/playlist?list=PL6Xpj9I5qXYEcOhn7TqghAJ6NAPrNmUBH
+https://www.youtube.com/playlist?list=PLjJh1vlSEYgvZ3ze_4pxKHNh1g5PId36-
+https://www.youtube.com/watch?v=Fkw0_aAtwIw
+https://www.youtube.com/watch?v=1HrOkb-RL0Y
+
+
+Segmentacja siecią
+https://github.com/uber-research/UPSNet
+https://github.com/PaddlePaddle/PaddleSeg
+https://github.com/facebookresearch/segment-anything
+
+############################################333
+https://staff.fnwi.uva.nl/e.peerbooms/rbm.html
+https://github.com/bacnguyencong/rbm-pytorch/blob/master/rbm.py
+https://blog.paperspace.com/beginners-guide-to-boltzmann-machines-pytorch/
+https://github.com/mr-easy/Restricted-Boltzmann-Machine/blob/master/rbm_mnist_example.ipynb
+https://github.com/yell/boltzmann-machines/blob/master/boltzmann_machines/rbm/base_rbm.py
+https://adityashrm21.github.io/Restricted-Boltzmann-Machines/
+https://www.cs.toronto.edu/~rsalakhu/papers/rbmcf.pdf
+https://medium.com/@neuralnets/boltzmann-machines-transformation-of-unsupervised-deep-learning-part-1-42659a74f530
+https://github.com/adityashrm21/Deep-Learning-Algorithms-Implementation/blob/master/Restricted_Boltzmann_Machines/rbm_impl.py
+https://github.com/adityashrm21/book-recommender-system-rbm/blob/master/rbm.py
+https://ml-lectures.org/docs/unsupervised_learning/ml_unsupervised-1.html
+https://spotintelligence.com/2023/02/20/restricted-boltzmann-machines-rbm/
+https://theory.physics.manchester.ac.uk/~judith/stat_therm/node87.html
+https://www.cs.toronto.edu/~hinton/absps/guideTR.pdf
+https://www.csrc.ac.cn/upload/file/20170703/1499052743888438.pdf
+https://medium.com/@soumallya160/a-complete-guide-to-boltzmann-machine-deep-learning-7f7ce29b9e09
+
+https://github.com/GabrielBianconi/pytorch-rbm/tree/master
