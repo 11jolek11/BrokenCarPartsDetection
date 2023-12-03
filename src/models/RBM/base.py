@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from door_data import DoorsDataset2, door_transforms
 import torchvision.transforms as T
 from PIL import Image
+from datetime import datetime
 
 
 summary_writer = SummaryWriter("../../../logs/runs/")
@@ -16,8 +17,8 @@ summary_writer = SummaryWriter("../../../logs/runs/")
 class RBM(nn.Module):
     def __init__(self, number_of_visible, number_of_hidden, k=33, *args, **kwargs):
         super(RBM, self).__init__()
-        self._number_of_visible = number_of_visible
-        self._number_of_hidden = number_of_hidden
+        self.number_of_visible = number_of_visible
+        self.number_of_hidden = number_of_hidden
         self._k = k
         self.weight = nn.Parameter(torch.rand(number_of_hidden, number_of_visible)*1e-3)
         self.bias_v = nn.Parameter(torch.rand(1, number_of_visible)*1e-3)  # Bias for visible lay.
@@ -27,7 +28,7 @@ class RBM(nn.Module):
         self.register_parameter("weights", self.weight)
 
     def get_properties(self):
-        return self._number_of_hidden, self._number_of_visible
+        return self.number_of_hidden, self.number_of_visible
 
     def sample_h_from_v(self, v0):
         phv = torch.sigmoid(nn.functional.linear(v0, self.weight, self.bias_h))
@@ -67,7 +68,7 @@ def train(model, data_loader, lr, epochs_number: int, optimizer, *args, **kwargs
         total_loss_by_epoch = 0
 
         for batch in data_loader:
-            batch = batch.reshape((-1, 1024))
+            batch = batch.reshape((-1, model.number_of_visible))
             batch = batch.to(DEVICE)
 
             v = model.forward(batch).to(DEVICE)
@@ -82,6 +83,13 @@ def train(model, data_loader, lr, epochs_number: int, optimizer, *args, **kwargs
 
         summary_writer.add_scalar("loss", total_loss_by_epoch, epoch)
         print('Epoch [{}/{}] --> loss: {:.4f}'.format(epoch + 1, epochs_number, total_loss_by_epoch))
+        now = datetime.now()
+        torch.save({
+            "epoch": epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': total_loss_by_epoch,
+        }, f"../../../checkpoint/RBM_{DEVICE.type}_{now.strftime('%m/%d/%Y, %H:%M:%S')}.pth")
 
 
 summary_writer.close()
@@ -94,8 +102,8 @@ if __name__ == "__main__":
     )
     train_loader = DataLoader(dataset=datas, batch_size=1, shuffle=True)
 
-    my_model = RBM(32*32, 32*32*2, k=33*9)
-    train(my_model, train_loader, 0.001, 80, torch.optim.SGD)
+    my_model = RBM(128*128, 128*128*2, k=3)
+    train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
 
     datas_test = DoorsDataset2(
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages",
@@ -107,8 +115,10 @@ if __name__ == "__main__":
     print(f"TEST IMAGE SHAPE {test.shape}")
     make_visible = T.ToPILImage()
     make_visible(test).show()
-    test = test.reshape((-1, 1024))
+    test = test.reshape((-1, my_model.number_of_visible))
     test = test.to(DEVICE)
     recon = my_model.forward(test)
-    recon = recon.reshape((32, 32))
+    recon = recon.reshape((128, 128))
     make_visible(recon).show()
+
+

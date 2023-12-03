@@ -120,7 +120,7 @@ class DoorsDataset2(Dataset):
 
 
 
-        resized_edges = cv2.resize(cropped_image, (32, 32), interpolation=cv2.INTER_AREA)
+        resized_edges = cv2.resize(cropped_image, (128, 128), interpolation=cv2.INTER_AREA)
 
         binarized = np.where(resized_edges > 100, 1.0, 0.0)
 
