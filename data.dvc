@@ -1,0 +1,6 @@
+outs:
+- md5: babe2586442bf1fd61f1be9f4aa0b07f.dir
+  size: 16303903896
+  nfiles: 16366
+  hash: md5
+  path: data
