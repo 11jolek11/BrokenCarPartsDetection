@@ -146,7 +146,7 @@ class DoorsDataset3(Dataset):
         # 'back_right_light', 'front_bumper', 'front_glass', 'front_left_door', 'front_left_light', 'front_right_door',
         # 'front_right_light', 'hood', 'left_mirror', 'right_mirror', 'tailgate', 'trunk', 'wheel']
 
-        catIds = self.coco.getCatIds(catNms=["front_left_door", "wheel"])
+        catIds = self.coco.getCatIds(catNms=["front_left_door"])
         imgIds = self.coco.getImgIds(catIds=catIds)
 
         self.imgs = self.coco.loadImgs(imgIds)

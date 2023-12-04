@@ -72,6 +72,7 @@ class RBM(nn.Module):
         ht = torch.sum(temp, dim=1)
         return -vt - ht
 
+
 def train(model, data_loader, lr, epochs_number: int, optimizer, *args, **kwargs):
     model = model.to(DEVICE)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -106,7 +107,28 @@ def train(model, data_loader, lr, epochs_number: int, optimizer, *args, **kwargs
         "epochs_number": epochs_number,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
-    }, f"../../../checkpoint/RBM_{DEVICE.type}_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.pth")
+    }, f"../../../models/RBM_{DEVICE.type}_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.pth")
+
+
+def test(model, data_loader):
+    model = model.eval()
+    model = model.to(DEVICE)
+
+    list_img = []
+
+    for batch in data_loader:
+        original_batch = torch.clone(batch).reshape((1, 128, 128))
+        original_batch = original_batch.to(DEVICE)
+        batch = batch.reshape((-1, model.number_of_visible))
+        batch = batch.to(DEVICE)
+
+        v = model.forward(batch).to(DEVICE)
+        v = v.reshape((1, 128, 128))
+        list_img.append(original_batch)
+        list_img.append(v)
+    grid = make_grid(list_img, nrow=2)
+    img = T.ToPILImage()(grid)
+    img.save("ttttts.jpg")
 
 
 summary_writer.close()
@@ -117,13 +139,24 @@ if __name__ == "__main__":
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
         transform=door_transforms
     )
+
     train_loader = DataLoader(dataset=datas, batch_size=1, shuffle=True)
 
     # my_model = RBM(128*128, 128*128+600, k=33)
     # train(my_model, train_loader, 0.001, 30, torch.optim.SGD)
 
-    my_model = RBM(128 * 128, 128 * 128 + 600, k=3)
-    train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
+    my_model = RBM(128 * 128, 128 * 128 + 600, k=33)
+    train(my_model, train_loader, 0.001, 50, torch.optim.SGD)
+
+    test_data = DoorsDataset3(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+        transform=door_transforms
+    )
+
+    test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
+
+    test(my_model, test_loader)
 
     datas_test = DoorsDataset3(
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
@@ -133,14 +166,14 @@ if __name__ == "__main__":
 
     test = datas_test[0]
     make_visible = T.ToPILImage()
-    make_visible(test).show()
+    make_visible(test).save("testttth.jpg")
     test = test.reshape((-1, my_model.number_of_visible))
     test = test.to(DEVICE)
     recon = my_model.forward(test)
     recon = recon.reshape((1, 128, 128))
     # test_tr = test.reshape((1, 128, 128))
     recon = recon.detach()
-    make_visible(recon).show()
+    make_visible(recon).save("recon.jpg")
     # print(f"TEST IMAGE SHAPE {test.shape} -- {recon.shape}")
     # grid = make_grid([test_tr, recon])
     # img = T.ToPILImage()(grid)
