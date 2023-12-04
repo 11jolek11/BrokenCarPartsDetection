@@ -118,6 +118,74 @@ class DoorsDataset2(Dataset):
                 [X, Y, W, H] = cv2.boundingRect(contour)
                 cropped_image = edges[Y:Y + H, X:X + W]
 
+        resized_edges = cv2.resize(cropped_image, (128, 128), interpolation=cv2.INTER_AREA)
+
+        binarized = np.where(resized_edges > 100, 1.0, 0.0)
+
+        if self.transform:
+            binarized = self.transform(binarized)
+
+        # print(binarized.shape)
+        return binarized
+
+class DoorsDataset3(Dataset):
+    def __init__(self, img_dir, annotation_file, transform=None):
+        self.annotation_file = Path(annotation_file)
+        self.img_dir = Path(img_dir)
+        self.transform = transform
+        # self._available_files = list(self.img_dir.glob('*.{jpg,jpeg,png,gif,bmp,tiff}'))
+        self._available_files = list(self.img_dir.glob('*.jpg'))
+
+        self.coco = COCO(self.annotation_file)
+
+        # Available categories
+        # cats = self.coco.loadCats(self.coco.getCatIds())
+        # print([cat["name"] for cat in cats])
+
+        # ['_background_', 'back_bumper', 'back_glass', 'back_left_door', 'back_left_light', 'back_right_door',
+        # 'back_right_light', 'front_bumper', 'front_glass', 'front_left_door', 'front_left_light', 'front_right_door',
+        # 'front_right_light', 'hood', 'left_mirror', 'right_mirror', 'tailgate', 'trunk', 'wheel']
+
+        catIds = self.coco.getCatIds(catNms=["front_left_door", "wheel"])
+        imgIds = self.coco.getImgIds(catIds=catIds)
+
+        self.imgs = self.coco.loadImgs(imgIds)
+
+        annIds = self.coco.getAnnIds(imgIds=[img["id"] for img in self.imgs], catIds=catIds, iscrowd=None)
+        self.anns = self.coco.loadAnns(annIds)
+
+    def __len__(self):
+        return len(self.anns)
+
+    def __getitem__(self, index):
+        mask = self.coco.annToMask(self.anns[index])
+        imgs = self.coco.loadImgs([self.anns[index]["image_id"]])[0]
+        img_path = Path((str(self.img_dir) + "/" + imgs["path"]))
+        # print(str(img_path.absolute()))
+        img = cv2.imread(str(img_path.absolute()))
+
+        # Mask decomposition
+        first = img[:, :, 0]
+        second = img[:, :, 1]
+        third = img[:, :, 2]
+
+        cut_first = first * mask
+        cut_second = second * mask
+        cut_third = third * mask
+
+        img = np.dstack((cut_first, cut_second, cut_third))
+
+        img_blur = cv2.GaussianBlur(img, (3, 3), sigmaX=0, sigmaY=0)
+        edges = cv2.Canny(image=img_blur, threshold1=50, threshold2=50)
+
+        MIN_CONTOUR_AREA = 100
+        img_thresh = cv2.adaptiveThreshold(edges, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+        Contours, imgContours = cv2.findContours(img_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for contour in Contours:
+            if cv2.contourArea(contour) > MIN_CONTOUR_AREA:
+                [X, Y, W, H] = cv2.boundingRect(contour)
+                cropped_image = edges[Y:Y + H, X:X + W]
+
 
 
         resized_edges = cv2.resize(cropped_image, (128, 128), interpolation=cv2.INTER_AREA)
@@ -127,7 +195,6 @@ class DoorsDataset2(Dataset):
         if self.transform:
             binarized = self.transform(binarized)
 
-        print(binarized.shape)
         return binarized
 
 if __name__ == "__main__":
@@ -138,6 +205,3 @@ if __name__ == "__main__":
 
     image = b[0]
     print(np.unique(image))
-
-    # cv2.imshow("test", image)
-    # cv2.waitKey(0)

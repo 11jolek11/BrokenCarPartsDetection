@@ -1,16 +1,27 @@
-import cv2
-import torch
-from torch import nn
-import torchvision
-from torch.utils.tensorboard import SummaryWriter
-from src.settings import DEVICE
-from torch.utils.data import DataLoader
-from door_data import DoorsDataset2, door_transforms
-import torchvision.transforms as T
-from PIL import Image
+import os
+import shutil
 from datetime import datetime
 
+import torch
+import torchvision.transforms as T
+from torch import nn
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+from torchvision.utils import make_grid
 
+from door_data import DoorsDataset2, DoorsDataset3, door_transforms
+from src.settings import DEVICE
+
+folder = "../../../logs/runs/"
+for filename in os.listdir(folder):
+    file_path = os.path.join(folder, filename)
+    try:
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+    except Exception as e:
+        print('Failed to delete %s. Reason: %s' % (file_path, e))
 summary_writer = SummaryWriter("../../../logs/runs/")
 
 
@@ -81,7 +92,7 @@ def train(model, data_loader, lr, epochs_number: int, optimizer, *args, **kwargs
             loss.backward()
             optimizer.step()
 
-        summary_writer.add_scalar("loss", total_loss_by_epoch, epoch)
+        summary_writer.add_scalar("Loss", total_loss_by_epoch, epoch)
         print('Epoch [{}/{}] --> loss: {:.4f}'.format(epoch + 1, epochs_number, total_loss_by_epoch))
         now = datetime.now()
         torch.save({
@@ -89,36 +100,48 @@ def train(model, data_loader, lr, epochs_number: int, optimizer, *args, **kwargs
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': total_loss_by_epoch,
-        }, f"../../../checkpoint/RBM_{DEVICE.type}_{now.strftime('%m/%d/%Y, %H:%M:%S')}.pth")
+        }, f"../../../checkpoint/checkpoint_RBM_{DEVICE.type}_{now.strftime('%m_%d_%Y_%H_%M_%S')}.pth")
+
+    torch.save({
+        "epochs_number": epochs_number,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+    }, f"../../../checkpoint/RBM_{DEVICE.type}_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.pth")
 
 
 summary_writer.close()
 
 if __name__ == "__main__":
-    datas = DoorsDataset2(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages",
+    datas = DoorsDataset3(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
         transform=door_transforms
     )
     train_loader = DataLoader(dataset=datas, batch_size=1, shuffle=True)
 
-    my_model = RBM(128*128, 128*128*2, k=3)
+    # my_model = RBM(128*128, 128*128+600, k=33)
+    # train(my_model, train_loader, 0.001, 30, torch.optim.SGD)
+
+    my_model = RBM(128 * 128, 128 * 128 + 600, k=3)
     train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
 
-    datas_test = DoorsDataset2(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages",
+    datas_test = DoorsDataset3(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
         transform=door_transforms
     )
 
     test = datas_test[0]
-    print(f"TEST IMAGE SHAPE {test.shape}")
     make_visible = T.ToPILImage()
     make_visible(test).show()
     test = test.reshape((-1, my_model.number_of_visible))
     test = test.to(DEVICE)
     recon = my_model.forward(test)
-    recon = recon.reshape((128, 128))
+    recon = recon.reshape((1, 128, 128))
+    # test_tr = test.reshape((1, 128, 128))
+    recon = recon.detach()
     make_visible(recon).show()
-
-
+    # print(f"TEST IMAGE SHAPE {test.shape} -- {recon.shape}")
+    # grid = make_grid([test_tr, recon])
+    # img = T.ToPILImage()(grid)
+    # img.show()
