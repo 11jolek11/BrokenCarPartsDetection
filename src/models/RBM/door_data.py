@@ -129,8 +129,11 @@ class DoorsDataset2(Dataset):
         return binarized
 
 class DoorsDataset3(Dataset):
-    def __init__(self, img_dir, annotation_file, transform=None):
+    def __init__(self, img_dir, annotation_file, parts=None, transform=None):
+        if parts is None:
+            parts = ["hood"]
         self.annotation_file = Path(annotation_file)
+        self.parts = parts
         self.img_dir = Path(img_dir)
         self.transform = transform
         # self._available_files = list(self.img_dir.glob('*.{jpg,jpeg,png,gif,bmp,tiff}'))
@@ -146,7 +149,8 @@ class DoorsDataset3(Dataset):
         # 'back_right_light', 'front_bumper', 'front_glass', 'front_left_door', 'front_left_light', 'front_right_door',
         # 'front_right_light', 'hood', 'left_mirror', 'right_mirror', 'tailgate', 'trunk', 'wheel']
 
-        catIds = self.coco.getCatIds(catNms=["front_left_door"])
+        # catIds = self.coco.getCatIds(catNms=["front_left_door"])
+        catIds = self.coco.getCatIds(catNms=parts)
         imgIds = self.coco.getImgIds(catIds=catIds)
 
         self.imgs = self.coco.loadImgs(imgIds)
@@ -156,6 +160,9 @@ class DoorsDataset3(Dataset):
 
     def __len__(self):
         return len(self.anns)
+
+    def get_parts(self):
+        return self.parts
 
     def __getitem__(self, index):
         mask = self.coco.annToMask(self.anns[index])
@@ -175,7 +182,8 @@ class DoorsDataset3(Dataset):
 
         img = np.dstack((cut_first, cut_second, cut_third))
 
-        img_blur = cv2.GaussianBlur(img, (3, 3), sigmaX=0, sigmaY=0)
+        # img_blur = cv2.GaussianBlur(img, (3, 3), sigmaX=0, sigmaY=0)
+        img_blur = cv2.GaussianBlur(img, (13, 13), sigmaX=0, sigmaY=0)
         edges = cv2.Canny(image=img_blur, threshold1=50, threshold2=50)
 
         MIN_CONTOUR_AREA = 100
@@ -198,10 +206,11 @@ class DoorsDataset3(Dataset):
         return binarized
 
 if __name__ == "__main__":
-    b = DoorsDataset2(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages",
+    b = DoorsDataset3(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json"
     )
 
     image = b[0]
-    print(np.unique(image))
+    cv2.imshow("image", image)
+    cv2.waitKey(0)
