@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 
-from door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2
+from door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2, DoorsDatasetFromFiles
 from src.settings import DEVICE
 
 # folder = "../../../logs/runs/"
@@ -173,12 +173,69 @@ def test(model, data_loader, file_name):
     img.save(file_name)
 
 if __name__ == "__main__":
-    datas = DoorsDataset3(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    # datas = DoorsDataset3(
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    #     transform=door_transforms
+    # )
+    #
+    # train_loader = DataLoader(dataset=datas, batch_size=1, shuffle=True)
+    #
+    # # my_model = RBM(128*128, 128*128+600, k=33)
+    # # train(my_model, train_loader, 0.001, 30, torch.optim.SGD)
+    #
+    # # my_model = RBM(128 * 128, 800, k=3)
+    # # train(my_model, train_loader, 0.001, 19, torch.optim.SGD)
+    #
+    # # my_model = RBM(128 * 128, 128 * 128, k=3)
+    # # train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
+    #
+    # my_model = RBM(128 * 128, 400, k=3)
+    # train(my_model, train_loader, 0.001, 80, datas.get_parts(), torch.optim.SGD)
+    # # 6
+    #
+    # test_data = DoorsDataset3(
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+    #     transform=door_transforms
+    # )
+    #
+    # test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
+    #
+    # test(my_model, test_loader, "on_test.jpg")
+    #
+    # test(my_model, train_loader, "on_train.jpg")
+    #
+    # datas_test = DoorsDataset3(
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    #     transform=door_transforms
+    # )
+    #
+    # test = datas_test[0]
+    # make_visible = T.ToPILImage()
+    # make_visible(test).save("testttth.jpg")
+    # test = test.reshape((-1, my_model.number_of_visible))
+    # test = test.to(DEVICE)
+    # recon = my_model.forward(test)
+    # recon = recon.reshape((1, 128, 128))
+    # # test_tr = test.reshape((1, 128, 128))
+    # recon = recon.detach()
+    # make_visible(recon).save("recon.jpg")
+    # # print(f"TEST IMAGE SHAPE {test.shape} -- {recon.shape}")
+    # # grid = make_grid([test_tr, recon])
+    # # img = T.ToPILImage()(grid)
+    # # img.show()
+
+    # datas = DoorsDataset3(
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    #     transform=door_transforms
+    # )
+    datas = DoorsDatasetFromFiles(
+        "C:/Users/dabro/PycharmProjects/scientificProject/notebooks/CarPartsDatasetExperimentDir/exp2/output",
         transform=door_transforms
     )
-
     train_loader = DataLoader(dataset=datas, batch_size=1, shuffle=True)
 
     # my_model = RBM(128*128, 128*128+600, k=33)
@@ -191,7 +248,7 @@ if __name__ == "__main__":
     # train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
 
     my_model = RBM(128 * 128, 400, k=3)
-    train(my_model, train_loader, 0.001, 80, datas.get_parts(), torch.optim.SGD)
+    train(my_model, train_loader, 0.001, 1, datas.get_parts(), torch.optim.SGD)
     # 6
 
     test_data = DoorsDataset3(
@@ -214,14 +271,14 @@ if __name__ == "__main__":
 
     test = datas_test[0]
     make_visible = T.ToPILImage()
-    make_visible(test).save("testttth.jpg")
+    make_visible(test).save("testttth_aug.jpg")
     test = test.reshape((-1, my_model.number_of_visible))
     test = test.to(DEVICE)
     recon = my_model.forward(test)
     recon = recon.reshape((1, 128, 128))
     # test_tr = test.reshape((1, 128, 128))
     recon = recon.detach()
-    make_visible(recon).save("recon.jpg")
+    make_visible(recon).save("recon_aug.jpg")
     # print(f"TEST IMAGE SHAPE {test.shape} -- {recon.shape}")
     # grid = make_grid([test_tr, recon])
     # img = T.ToPILImage()(grid)
