@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 
-from door_data import DoorsDataset2, DoorsDataset3, door_transforms
+from door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2
 from src.settings import DEVICE
 
 # folder = "../../../logs/runs/"
@@ -142,7 +142,7 @@ def train(model, data_loader, lr, epochs_number: int, parts: [str], optimizer, *
 
     hpams = model.get_properties()
     hpams["epochs_number"] = epochs_number
-    # summary_writer.add_hparams(hpams, {"min_loss_by_epoch": np.array(min(all_loss_by_epoch))}, run_name=train_uuid)
+    summary_writer.add_hparams(hpams, {"all_loss_by_epoch": np.array(min(all_loss_by_epoch))}, run_name=train_uuid)
     print(f"Train series UUID {train_uuid}")
     # summary_writer
     summary_writer.close()
@@ -190,8 +190,8 @@ if __name__ == "__main__":
     # my_model = RBM(128 * 128, 128 * 128, k=3)
     # train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
 
-    my_model = RBM(128 * 128, 600, k=3)
-    train(my_model, train_loader, 0.001, 6, datas.get_parts(), torch.optim.SGD)
+    my_model = RBM(128 * 128, 400, k=3)
+    train(my_model, train_loader, 0.001, 80, datas.get_parts(), torch.optim.SGD)
     # 6
 
     test_data = DoorsDataset3(

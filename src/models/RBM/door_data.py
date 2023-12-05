@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 from pycocotools.coco import COCO
 import matplotlib.image as mpimg
+import Augmentor
 
 
 class DoorsDataset(Dataset):
@@ -35,6 +36,13 @@ class DoorsDataset(Dataset):
 
         return img
 
+p = Augmentor.Pipeline()
+p.rotate(probability=0.7, max_left_rotation=10, max_right_rotation=10)
+p.flip_left_right(probability=0.6)
+p.flip_top_bottom(probability=0.5)
+p.skew_tilt(probability=0.75)
+p.skew_corner(probability=0.4)
+p.rotate_random_90(probability=0.8)
 
 door_transforms = v2.Compose([
     # v2.ToImage(),
@@ -43,6 +51,13 @@ door_transforms = v2.Compose([
     v2.ToDtype(torch.float32, scale=True)
 ])
 
+door_transforms2 = v2.Compose([
+    # v2.ToImage(),
+    # v2.Resize([32, 32]),  # FIXME(11jolek11): Is not resizing to 32x32
+    p.torch_transform(),
+    v2.ToTensor(),
+    v2.ToDtype(torch.float32, scale=True)
+])
 
 
 class Canny(object):
