@@ -78,3 +78,6 @@ https://medium.com/@soumallya160/a-complete-guide-to-boltzmann-machine-deep-lear
 https://github.com/GabrielBianconi/pytorch-rbm/tree/master
 
 https://retiredparkingguard.com/notes/machine_learning/restricted_boltzmann_machines.html
+
+
+# https://pythonexamples.org/python-opencv-image-erosion/
