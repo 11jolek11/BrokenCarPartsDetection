@@ -81,3 +81,9 @@ https://retiredparkingguard.com/notes/machine_learning/restricted_boltzmann_mach
 
 
 # https://pythonexamples.org/python-opencv-image-erosion/
+
+
+
+# VAE
+
+https://avandekleut.github.io/vae/

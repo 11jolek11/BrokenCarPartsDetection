@@ -13,7 +13,7 @@ class Canny(torch.nn.Module):
         edges = cv2.Canny(image=sample, threshold1=self.threshold[0], threshold2=self.threshold[1])
         return edges
 
-
+# TODO(11jolek11): Zrobić tak jak u Łukaszewskiego filtrować wartości RGB i podbijać gradient na krawędziach
 class GaussianBlur(torch.nn.Module):
     def __init__(self, kernel_size: Tuple[int, int], sigma_x=0, sigma_y=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,7 +39,7 @@ class Binarize(torch.nn.Module):
 class FindBoundingBoxAndCrop(torch.nn.Module):
     def __init__(self, max_value=255, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.MIN_CONTOUR_AREA = 1000
+        self.MIN_CONTOUR_AREA = 300
         self.max_value = max_value
 
     def forward(self, sample, *args, **kwargs):
@@ -50,6 +50,7 @@ class FindBoundingBoxAndCrop(torch.nn.Module):
             if cv2.contourArea(contour) > self.MIN_CONTOUR_AREA:
                 [X, Y, W, H] = cv2.boundingRect(contour)
                 cropped_image = sample[Y:Y + H, X:X + W]
+        print(f"{cropped_image.shape}")
         return cropped_image
 
 
@@ -60,7 +61,10 @@ class Resize(torch.nn.Module):
         self.interpolation = interpolation
 
     def forward(self, sample):
-        return cv2.resize(sample, self.new_size, interpolation=self.interpolation)
+        print(f"Sample size before resize: {sample.shape}")
+        new_sample = cv2.resize(sample, self.new_size, interpolation=self.interpolation)
+        print(f"Sample size after resize: {new_sample.shape}")
+        return new_sample
 
 
 class BilateralFilter(torch.nn.Module):
@@ -83,3 +87,35 @@ class Erode(torch.nn.Module):
 
     def forward(self, sample):
         return cv2.erode(sample, self.kernel)
+
+
+class ColorToHSV(torch.nn.Module):
+    def __init__(self, target_color_space=cv2.COLOR_BGR2HSV):
+        super().__init__()
+        self.target_color_space = target_color_space
+
+    def forward(self, sample):
+        return cv2.cvtColor(sample, self.target_color_space)
+
+
+class RemoveInnerContours(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, sample):
+        edges = cv2.Canny(sample, 50, 150, apertureSize=3)
+        contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # Create an empty mask
+        mask = np.zeros_like(edges)
+
+        # Iterate through contours
+        for i in range(len(contours)):
+            # Check if the contour has no parent (outer contour)
+            if hierarchy[0][i][3] == -1:
+                # Draw the contour on the mask
+                cv2.drawContours(mask, contours, i, 255, thickness=cv2.FILLED)
+
+        # Bitwise AND operation to keep only the outer contours
+        result = cv2.bitwise_and(edges, mask)
+        return result
+

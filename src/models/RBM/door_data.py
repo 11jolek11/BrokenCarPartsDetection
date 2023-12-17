@@ -1,20 +1,13 @@
 import os.path
+import uuid
+from pathlib import Path
 
-import torch
-import torchvision.transforms
+from pycocotools.coco import COCO
+from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision.transforms import v2
-import cv2
-from torchvision.io import read_image as torch_read_image
-from pathlib import Path
-import numpy as np
-from pycocotools.coco import COCO
-import matplotlib.image as mpimg
-import Augmentor
-import albumentations as A
-import copy
-import matplotlib.pyplot as plt
-import uuid
+
+from transforms import *
 
 
 class DoorsDataset(Dataset):
@@ -24,7 +17,6 @@ class DoorsDataset(Dataset):
         else:
             raise AttributeError("Directory not found")
         self.transform = transform
-        # self._available_files = list(self.img_dir.glob('*.{jpg,jpeg,png,gif,bmp,tiff}'))
         self._available_files = list(self.img_dir.glob('*.jpg'))
 
     def __len__(self):
@@ -42,16 +34,6 @@ class DoorsDataset(Dataset):
 
         return img
 
-p = Augmentor.Pipeline("C:/Users/dabro/PycharmProjects/scientificProject/notebooks/CarPartsDatasetExperimentDir/exp2",
-                       "C:/Users/dabro/PycharmProjects/scientificProject/notebooks/CarPartsDatasetExperimentDir/exp2/output")
-p.rotate(probability=0.7, max_left_rotation=10, max_right_rotation=10)
-p.flip_left_right(probability=0.6)
-p.flip_top_bottom(probability=0.5)
-p.skew_tilt(probability=0.75)
-p.skew_corner(probability=0.4)
-p.rotate_random_90(probability=0.8)
-p.sample(10000)
-
 door_transforms = v2.Compose([
     # v2.ToImage(),
     # v2.Resize([32, 32]),  # FIXME(11jolek11): Is not resizing to 32x32
@@ -62,31 +44,25 @@ door_transforms = v2.Compose([
 door_transforms2 = v2.Compose([
     # v2.ToImage(),
     # v2.Resize([32, 32]),  # FIXME(11jolek11): Is not resizing to 32x32
-    p.torch_transform(),
     v2.ToTensor(),
     v2.ToDtype(torch.float32, scale=True)
 ])
 
-def visualize_augmentations(dataset, idx=0, samples=10, cols=5):
-    dataset = copy.deepcopy(dataset)
-    # dataset.transform = transform
-    rows = samples // cols
-    figure, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(12, 6))
-    for i in range(samples):
-        image, _ = dataset[idx]
-        ax.ravel()[i].imshow(image)
-        ax.ravel()[i].set_axis_off()
-    plt.tight_layout()
-    plt.show()
 
-
-class Canny(object):
-    pass
-
-
-class Binarize(object):
-    pass
-
+my_transforms = v2.Compose([
+    v2.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0)),
+    ColorToHSV(),
+    GaussianBlur((13, 13)),
+    BilateralFilter(15, 75, 75),
+    RemoveInnerContours(),
+    # Erode((30, 30)),
+    # GaussianBlur((3, 3)),
+    FindBoundingBoxAndCrop(),
+    Resize((128, 128)),
+    Binarize(),
+    v2.ToTensor(),
+    v2.ToDtype(torch.float32, scale=True)
+])
 class DoorsDataset2(Dataset):
     def __init__(self, img_dir, annotation_file, transform=None):
         self.annotation_file = Path(annotation_file)
@@ -137,12 +113,17 @@ class DoorsDataset2(Dataset):
         third = img[:, :, 2]
 
         cut_first = first * mask
+
         cut_second = second * mask
         cut_third = third * mask
 
         img = np.dstack((cut_first, cut_second, cut_third))
 
         img_blur = cv2.GaussianBlur(img, (3, 3), sigmaX=0, sigmaY=0)
+
+        # blur = cv.bilateralFilter(img,9,75,75)
+        # https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
+
         edges = cv2.Canny(image=img_blur, threshold1=50, threshold2=50)
 
         MIN_CONTOUR_AREA = 1000
@@ -163,14 +144,15 @@ class DoorsDataset2(Dataset):
         # print(binarized.shape)
         return binarized
 
+
 class DoorsDataset3(Dataset):
     def __init__(self, img_dir, annotation_file, parts=None, transform=None):
         if parts is None:
             parts = ["hood"]
-        self.annotation_file = Path(annotation_file)
         self.parts = parts
         self.img_dir = Path(img_dir)
         self.transform = transform
+        self.annotation_file = Path(annotation_file)
         # self._available_files = list(self.img_dir.glob('*.{jpg,jpeg,png,gif,bmp,tiff}'))
         self._available_files = list(self.img_dir.glob('*.jpg'))
 
@@ -229,8 +211,6 @@ class DoorsDataset3(Dataset):
                 [X, Y, W, H] = cv2.boundingRect(contour)
                 cropped_image = edges[Y:Y + H, X:X + W]
 
-
-
         resized_edges = cv2.resize(cropped_image, (128, 128), interpolation=cv2.INTER_AREA)
 
         binarized = np.where(resized_edges > 100, 1.0, 0.0)
@@ -244,7 +224,7 @@ class DoorsDataset3(Dataset):
 class DoorsDatasetSaver(Dataset):
     def __init__(self, img_dir, annotation_file, parts=None, transform=None):
         if parts is None:
-            parts = ["hood", ""]
+            parts = ["hood"]
         self.annotation_file = Path(annotation_file)
         self.parts = parts
         self.img_dir = Path(img_dir)
@@ -317,11 +297,6 @@ class DoorsDatasetSaver(Dataset):
         if os.path.exists(temp_path):
             print(f"{img_uuid} created")
 
-        # augumented_edges = resized_edges
-        # augumented_edges = self.transform(door_transforms2(image=resized_edges)["image"])
-        #
-        # print(augumented_edges)
-
         binarized = np.where(resized_edges > 100, 1.0, 0.0)
 
         if self.transform:
@@ -329,50 +304,106 @@ class DoorsDatasetSaver(Dataset):
 
         return binarized
 
-class DoorsDatasetFromFiles(Dataset):
-    def __init__(self, img_dir, parts=None, transform=None):
+
+class CarDataset(Dataset):
+    def __init__(self, img_dir, annotation_file, parts=None, transform=None):
         if parts is None:
             parts = ["hood"]
         self.parts = parts
         self.img_dir = Path(img_dir)
         self.transform = transform
+        self.annotation_file = Path(annotation_file)
         # self._available_files = list(self.img_dir.glob('*.{jpg,jpeg,png,gif,bmp,tiff}'))
         self._available_files = list(self.img_dir.glob('*.jpg'))
 
+        self.coco = COCO(self.annotation_file)
+
+        # Available categories
+        # cats = self.coco.loadCats(self.coco.getCatIds())
+        # print([cat["name"] for cat in cats])
+
+        # ['_background_', 'back_bumper', 'back_glass', 'back_left_door', 'back_left_light', 'back_right_door',
+        # 'back_right_light', 'front_bumper', 'front_glass', 'front_left_door', 'front_left_light', 'front_right_door',
+        # 'front_right_light', 'hood', 'left_mirror', 'right_mirror', 'tailgate', 'trunk', 'wheel']
+
+        # "front_left_door",'front_right_door', 'hood',"front_bumper" , 'back_bumper', 'tailgate'
+
+        # catIds = self.coco.getCatIds(catNms=["front_left_door"])
+        catIds = self.coco.getCatIds(catNms=parts)
+        imgIds = self.coco.getImgIds(catIds=catIds)
+
+        self.imgs = self.coco.loadImgs(imgIds)
+
+        annIds = self.coco.getAnnIds(imgIds=[img["id"] for img in self.imgs], catIds=catIds, iscrowd=None)
+        self.anns = self.coco.loadAnns(annIds)
+
     def __len__(self):
-        return len(self._available_files)
+        return len(self.anns)
 
     def get_parts(self):
         return self.parts
 
     def __getitem__(self, index):
-        img_path = Path(self._available_files[index])
+        mask = self.coco.annToMask(self.anns[index])
+        imgs = self.coco.loadImgs([self.anns[index]["image_id"]])[0]
+        img_path = Path((str(self.img_dir) + "/" + imgs["path"]))
         # print(str(img_path.absolute()))
         img = cv2.imread(str(img_path.absolute()))
+
+        # Mask decomposition
+        first = img[:, :, 0]
+        second = img[:, :, 1]
+        third = img[:, :, 2]
+
+        cut_first = first * mask
+        cut_second = second * mask
+        cut_third = third * mask
+
+        img = np.dstack((cut_first, cut_second, cut_third))
+        print(f"Img shape {img.shape}")
+        # img_path = Path(self._available_files[index])
+        # print(str(img_path.absolute()))
+        # img = cv2.imread(str(img_path.absolute()))
         if self.transform:
             img = self.transform(img)
         return img
 
 
+train_transforms = v2.Compose([
+        GaussianBlur((13, 13)),
+        BilateralFilter(30, 75, 75),
+        Erode((9, 9)),
+        Canny((50, 50)),
+        GaussianBlur((3, 3)),
+        FindBoundingBoxAndCrop(),
+        Resize((128, 128)),
+        Binarize(),
+        v2.ToTensor(),
+        v2.ToDtype(torch.float32, scale=True)
+    ])
+
+train_transforms32 = v2.Compose([
+        GaussianBlur((13, 13)),
+        BilateralFilter(5, 15, 15),
+        Erode((9, 9)),
+        Canny((50, 50)),
+        GaussianBlur((3, 3)),
+        FindBoundingBoxAndCrop(),
+        Resize((32, 32)),
+        Binarize(),
+        v2.ToTensor(),
+        v2.ToDtype(torch.float32, scale=True)
+    ])
+
 if __name__ == "__main__":
-    # datas = DoorsDatasetSaver(
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
-    #     transform=door_transforms
-    # )
-    #
-    # for data_n in range(len(datas)):
-    #     datas[data_n]
-
-    datas = DoorsDatasetFromFiles(
-        "C:/Users/dabro/PycharmProjects/scientificProject/notebooks/CarPartsDatasetExperimentDir/exp2/output",
-        transform=door_transforms
+    datas_test = CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+        transform=train_transforms
     )
-    print(f"Number of images {len(datas)}")
-    image = datas[0]
-    cv2.imshow("image", image)
-    cv2.waitKey(0)
 
-
-
-    # visualize_augmentations(datas)
+    test_loader = DataLoader(dataset=datas_test, batch_size=1, shuffle=True)
+    for image in test_loader:
+        print(type(image))
+        img = v2.ToPILImage()(image)
+        img.show()
