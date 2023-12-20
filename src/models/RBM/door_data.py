@@ -347,7 +347,6 @@ class CarDataset(Dataset):
         mask = self.coco.annToMask(self.anns[index])
         imgs = self.coco.loadImgs([self.anns[index]["image_id"]])[0]
         img_path = Path((str(self.img_dir) + "/" + imgs["path"]))
-        # print(str(img_path.absolute()))
         img = cv2.imread(str(img_path.absolute()))
 
         # Mask decomposition
@@ -360,7 +359,6 @@ class CarDataset(Dataset):
         cut_third = third * mask
 
         img = np.dstack((cut_first, cut_second, cut_third))
-        print(f"Img shape {img.shape}")
         # img_path = Path(self._available_files[index])
         # print(str(img_path.absolute()))
         # img = cv2.imread(str(img_path.absolute()))
@@ -404,6 +402,5 @@ if __name__ == "__main__":
 
     test_loader = DataLoader(dataset=datas_test, batch_size=1, shuffle=True)
     for image in test_loader:
-        print(type(image))
         img = v2.ToPILImage()(image)
         img.show()

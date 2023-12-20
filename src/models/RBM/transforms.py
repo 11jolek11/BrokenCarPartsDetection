@@ -50,7 +50,6 @@ class FindBoundingBoxAndCrop(torch.nn.Module):
             if cv2.contourArea(contour) > self.MIN_CONTOUR_AREA:
                 [X, Y, W, H] = cv2.boundingRect(contour)
                 cropped_image = sample[Y:Y + H, X:X + W]
-        print(f"{cropped_image.shape}")
         return cropped_image
 
 
@@ -61,9 +60,7 @@ class Resize(torch.nn.Module):
         self.interpolation = interpolation
 
     def forward(self, sample):
-        print(f"Sample size before resize: {sample.shape}")
         new_sample = cv2.resize(sample, self.new_size, interpolation=self.interpolation)
-        print(f"Sample size after resize: {new_sample.shape}")
         return new_sample
 
 

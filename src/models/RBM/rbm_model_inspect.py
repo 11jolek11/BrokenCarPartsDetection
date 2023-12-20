@@ -1,5 +1,7 @@
 import torch
 from pathlib import Path
+from base import RBM
+from math import sqrt
 
 
 class InspectModel:
@@ -12,14 +14,21 @@ class InspectModel:
         self.path_to_model = path_to_model
 
     def get_model(self):
-        state_dicta = torch.load(self.path_to_model)["model_state_dict"]
+        state_dicta = torch.load(self.path_to_model)['model_state_dict']
+        # print(state_dicta.keys())
+        # odict_keys(['weight', 'bias_v', 'bias_h', 'bias v', 'bias h', 'weights'])
+        # print(state_dicta['bias_v'].shape[1])
+        # print(state_dicta['bias_h'].shape[1])
+        model = self.model(state_dicta['bias_v'].shape[1], state_dicta['bias_h'].shape[1])
         # state_dicta = torch.load(self.path_to_model)
         # print(state_dicta)
-        # model = self.model.load_state_dict(state_dicta)
+        temp = model.load_state_dict(state_dicta)
+
+        return temp
 
 
 if __name__ == '__main__':
     inspc = InspectModel(RBM,
                          ["epochs_number", "train series UUID", "parts"],
-                         "C:/Users/dabro/OneDrive/Pulpit/test_trained/RBM_cuda_12_10_2023_16_07_27_uuid_4aff48c0.pth")
+                         "C:/Users/dabro/PycharmProjects/scientificProject/models/RBM_cuda_12_04_2023_17_58_47.pth")
     inspc.get_model()

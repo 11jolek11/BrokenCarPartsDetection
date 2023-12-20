@@ -29,20 +29,7 @@ from src.settings import DEVICE
 #     except Exception as e:
 #         print('Failed to delete %s. Reason: %s' % (file_path, e))
 # summary_writer = SummaryWriter("../../../logs/runs/", flush_secs=30)
-class InspectModel:
-    def __init__(self, model, keywords: list[str] | tuple[str], path_to_model: str | Path = None) -> None:
-        self.model = model
-        self.keywords = keywords
-        self.path_to_model = path_to_model
 
-    def set_path_to_model(self, path_to_model: str | Path) -> None:
-        self.path_to_model = path_to_model
-
-    def get_model(self):
-        state_dicta = dict(torch.load(self.path_to_model)["model_state_dict"])
-        # state_dicta = torch.load(self.path_to_model)
-        print(state_dicta)
-        model = self.model.load_state_dict(state_dicta)
 
 class RBM(nn.Module):
     def __init__(self, number_of_visible, number_of_hidden, k=3, *args, **kwargs):
@@ -175,6 +162,9 @@ def train(model, data_loader, lr, epochs_number: int, parts: [str], optimizer, *
     # summary_writer
     summary_writer.close()
 
+    plt.plot(all_loss_by_epoch)
+    plt.savefig(f"all_loss_by_epoch_{train_uuid}")
+
 
 def test(model, data_loader, file_name, loss_file_name, size=128, k=None):
     model = model.eval()
@@ -208,6 +198,7 @@ def test(model, data_loader, file_name, loss_file_name, size=128, k=None):
     # summary_writer.add_images("Compare", grid)
     img = T.ToPILImage()(grid)
     img.save(file_name)
+    print(f"Image saved to {file_name}")
 
 def test3(model, data_loader, file_name, loss_file_name, size=128):
     model = model.eval()
@@ -243,15 +234,36 @@ def test3(model, data_loader, file_name, loss_file_name, size=128):
 
 
 if __name__ == "__main__":
+
+    # back_right_door - - 29
+    # back_right_light - - 20
+    # front_bumper - - 74
+    # front_glass - - 74
+    # front_left_door - - 35
+    # front_left_light - - 62
+    # front_right_door - - 39
+    # front_right_light - - 67
+    # hood - - 74
+    # left_mirror - - 55
+    # right_mirror - - 60
+    # tailgate - - 7
+    # trunk - - 18
+    # wheel - - 76
+
+    # parts = ["front_right_door", "hood"],
     input_shape = (128, 128)
     datas = CarDataset(
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
-        # parts=["front_left_door", 'front_right_door', 'hood', 'back_glass', 'front_glass'],
-        parts=["front_left_door", 'front_right_door'],
+        parts=["hood"],
         transform=my_transforms
     )
     #
+    print(f'datas size {len(datas)}')
+
+    if len(datas) < 10:
+        raise ValueError('Not enough data')
+
     train_loader = DataLoader(dataset=datas, batch_size=1, shuffle=True)
 
     # make_visible = T.ToPILImage()
@@ -332,18 +344,19 @@ if __name__ == "__main__":
     # train(my_model, train_loader, 0.001, 1, torch.optim.SGD)
 
 
-    my_model = RBM(128 * 128, 64*64, k=3)
+    my_model = RBM(128 * 128, 128*128, k=3)
 
     # my_model = RBM(32 * 32, 512, k=4)
-    train(my_model, train_loader, 0.001, 30, datas.get_parts(), torch.optim.SGD)
+    # epochs number 11
+    train(my_model, train_loader, 0.001, 16, datas.get_parts(), torch.optim.SGD)
 
     test_data = CarDataset(
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
-        parts=["front_left_door", 'front_right_door'],
+        parts=["hood"],
         transform=my_transforms
     )
-
+    print(f'test data size {len(test_data)}')
     test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
 
     # make_visible = T.ToPILImage()
