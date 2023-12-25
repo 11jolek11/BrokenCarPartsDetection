@@ -329,13 +329,36 @@ class CarDataset(Dataset):
         # "front_left_door",'front_right_door', 'hood',"front_bumper" , 'back_bumper', 'tailgate'
 
         # catIds = self.coco.getCatIds(catNms=["front_left_door"])
-        catIds = self.coco.getCatIds(catNms=parts)
-        imgIds = self.coco.getImgIds(catIds=catIds)
 
-        self.imgs = self.coco.loadImgs(imgIds)
+        anns_by_cat = []
 
-        annIds = self.coco.getAnnIds(imgIds=[img["id"] for img in self.imgs], catIds=catIds, iscrowd=None)
-        self.anns = self.coco.loadAnns(annIds)
+        for part in parts:
+            cat_id = self.coco.getCatIds(catNms=[part])
+            set_to_insert = self.coco.getAnnIds(catIds=cat_id, iscrowd=None)
+            print(f"{part} has {len(set_to_insert)} annotations")
+            # FIXME(11jolek11): Union is not adding new elements to a set!
+            anns_by_cat.extend(set_to_insert)
+            # print(f"{part} has {len(set_to_insert)} and change {len(anns_by_cat)}")
+        anns_by_cat = set(anns_by_cat)
+
+
+
+
+
+
+
+
+
+
+
+
+        # catIds = self.coco.getCatIds(catNms=parts)
+        # imgIds = self.coco.getImgIds(catIds=catIds)
+
+        # self.imgs = self.coco.loadImgs(imgIds)
+
+        # annIds = self.coco.getAnnIds(imgIds=[img["id"] for img in self.imgs], catIds=catIds, iscrowd=None)
+        self.anns = self.coco.loadAnns(list(anns_by_cat))
 
     def __len__(self):
         return len(self.anns)
@@ -394,13 +417,14 @@ train_transforms32 = v2.Compose([
     ])
 
 if __name__ == "__main__":
-    datas_test = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
-        transform=train_transforms
+    test_data = CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+        parts=["hood", "wheel"]
     )
+    print(f'test data size {len(test_data)}')
 
-    test_loader = DataLoader(dataset=datas_test, batch_size=1, shuffle=True)
-    for image in test_loader:
-        img = v2.ToPILImage()(image)
-        img.show()
+    # test_loader = DataLoader(dataset=datas_test, batch_size=1, shuffle=True)
+    # for image in test_loader:
+    #     img = v2.ToPILImage()(image)
+    #     img.show()
