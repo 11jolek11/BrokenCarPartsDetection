@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision.transforms import v2
 
-from transforms import *
+from .transforms import *
 
 
 class DoorsDataset(Dataset):
@@ -330,35 +330,24 @@ class CarDataset(Dataset):
 
         # catIds = self.coco.getCatIds(catNms=["front_left_door"])
 
-        anns_by_cat = []
+        cats = self.coco.loadCats(self.coco.getCatIds())
 
-        for part in parts:
-            cat_id = self.coco.getCatIds(catNms=[part])
-            set_to_insert = self.coco.getAnnIds(catIds=cat_id, iscrowd=None)
-            print(f"{part} has {len(set_to_insert)} annotations")
-            # FIXME(11jolek11): Union is not adding new elements to a set!
-            anns_by_cat.extend(set_to_insert)
-            # print(f"{part} has {len(set_to_insert)} and change {len(anns_by_cat)}")
-        anns_by_cat = set(anns_by_cat)
+        self.experiment_dict = dict()
 
+        for name in [cat["name"] for cat in cats]:
+            catIds = self.coco.getCatIds(catNms=[name])
+            imgIds = self.coco.getImgIds(catIds=catIds)
+            annIds = self.coco.getAnnIds(catIds=catIds)
+            self.experiment_dict[name] = annIds
+            print(f"{name} -- {len(imgIds)} -- {len(annIds)}")
 
+        # self.anns = self.coco.loadAnns(list(anns_by_cat))
+        self.anns = []
 
-
-
-
-
-
-
-
-
-
-        # catIds = self.coco.getCatIds(catNms=parts)
-        # imgIds = self.coco.getImgIds(catIds=catIds)
-
-        # self.imgs = self.coco.loadImgs(imgIds)
-
-        # annIds = self.coco.getAnnIds(imgIds=[img["id"] for img in self.imgs], catIds=catIds, iscrowd=None)
-        self.anns = self.coco.loadAnns(list(anns_by_cat))
+        for part in self.parts:
+            self.anns.extend(self.experiment_dict[part])
+        # print(self.anns)
+        self.anns = self.coco.loadAnns(list(self.anns))
 
     def __len__(self):
         return len(self.anns)
@@ -418,8 +407,8 @@ train_transforms32 = v2.Compose([
 
 if __name__ == "__main__":
     test_data = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
         parts=["hood", "wheel"]
     )
     print(f'test data size {len(test_data)}')

@@ -4,6 +4,7 @@ from datetime import datetime
 import uuid
 from tqdm import tqdm
 from alive_progress import alive_bar
+from win11toast import notify
 
 import numpy as np
 import torch
@@ -15,7 +16,7 @@ from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2, CarDataset, train_transforms, my_transforms
+from .door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2, CarDataset, train_transforms, my_transforms
 from src.settings import DEVICE
 
 # folder = "../../../logs/runs/"
@@ -37,9 +38,9 @@ class RBM(nn.Module):
         self.number_of_visible = number_of_visible
         self.number_of_hidden = number_of_hidden
         self._k = k
-        self.weight = nn.Parameter(torch.rand(number_of_hidden, number_of_visible)*1e-3)
-        self.bias_v = nn.Parameter(torch.rand(1, number_of_visible)*1e-3)  # Bias for visible lay.
-        self.bias_h = nn.Parameter(torch.rand(1, number_of_hidden)*1e-3)  # Bias for hidden lay.
+        self.weight = nn.Parameter(torch.rand(number_of_hidden, number_of_visible)*1e-9)
+        self.bias_v = nn.Parameter(torch.rand(1, number_of_visible)*1e-4)  # Bias for visible lay.
+        self.bias_h = nn.Parameter(torch.rand(1, number_of_hidden)*1e-4)  # Bias for hidden lay.
         self.register_parameter("bias v", self.bias_v)
         self.register_parameter("bias h", self.bias_h)
         self.register_parameter("weights", self.weight)
@@ -81,6 +82,20 @@ class RBM(nn.Module):
         temp = torch.log(torch.add(torch.exp(nn.functional.linear(v, self.weight, self.bias_h)), 1))
         ht = torch.sum(temp, dim=1)
         return -vt - ht
+
+    def reconstruct(self, image, size=128, to_image: bool = False):
+        self.eval()
+        image = image.reshape((-1, self.number_of_visible))
+        image = image.to(DEVICE)
+
+        v = self.forward(image, k=self._k).to(DEVICE)
+        # TODO(11jolek11): Add better size handling
+        v = v.reshape((1, size, size))
+
+        if to_image:
+            return T.ToPILImage()(v)
+
+        return v
 
 
 def creat_folder(path):
@@ -164,11 +179,14 @@ def train(model, data_loader, lr, epochs_number: int, parts: [str], optimizer, *
 
     plt.plot(all_loss_by_epoch)
     plt.savefig(f"all_loss_by_epoch_{train_uuid}")
+    notify("RBM model finish", scenario='incomingCall')
 
 
-def test(model, data_loader, file_name, loss_file_name, size=128, k=None):
+def test(model, data_loader, file_name, loss_file_name, parts, size=128, k=None):
     model = model.eval()
     model = model.to(DEVICE)
+
+    file_name = file_name + str(parts) + ".jpg"
 
     if not k:
         k = model._k
@@ -200,9 +218,11 @@ def test(model, data_loader, file_name, loss_file_name, size=128, k=None):
     img.save(file_name)
     print(f"Image saved to {file_name}")
 
-def test3(model, data_loader, file_name, loss_file_name, size=128):
+def test3(model, data_loader, file_name, loss_file_name, parts, size=128):
     model = model.eval()
     model = model.to(DEVICE)
+
+    file_name = file_name + str(parts)
 
     list_img = []
     losses = []
@@ -255,7 +275,9 @@ if __name__ == "__main__":
     datas = CarDataset(
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
-        parts=["hood"],
+        parts=["hood", "front_glass", "back_glass", "left_mirror", "right_mirror",
+               "front_left_door", "front_right_door", "back_left_door", "back_left_light",
+               "back_right_door", "back_right_light"],
         transform=my_transforms
     )
     #
@@ -348,7 +370,7 @@ if __name__ == "__main__":
 
     # my_model = RBM(32 * 32, 512, k=4)
     # epochs number 11
-    train(my_model, train_loader, 0.001, 16, datas.get_parts(), torch.optim.SGD)
+    train(my_model, train_loader, 0.001, 25, datas.get_parts(), torch.optim.SGD)
 
     test_data = CarDataset(
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
@@ -359,6 +381,54 @@ if __name__ == "__main__":
     print(f'test data size {len(test_data)}')
     test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
 
+    test(my_model, test_loader, "on_test_new_", None, ["hood"])
+
+    test_data = CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+        parts=["front_glass"],
+        transform=my_transforms
+    )
+
+    test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
+
+    test(my_model, test_loader, "on_test_new_", None, ["front_glass"])
+
+    test_data = CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+        parts=["left_mirror"],
+        transform=my_transforms
+    )
+
+    test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
+
+    test(my_model, test_loader, "on_test_new_", None, ["left_mirror"])
+
+    test_data = CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+        parts=["front_left_door"],
+        transform=my_transforms
+    )
+
+    test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
+
+    test(my_model, test_loader, "on_test_new_", None, ["front_left_door"])
+
+    test_data = CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+        parts=["back_left_light"],
+        transform=my_transforms
+    )
+
+    test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
+
+    test(my_model, test_loader, "on_test_new_", None, ["back_left_light"])
+
+
+    # back_left_light
     # make_visible = T.ToPILImage()
     # for number, batch in enumerate(test_data):
     #     print(batch.shape)
@@ -401,11 +471,11 @@ if __name__ == "__main__":
 
 
 
-    test_k = None
+    # test_k = None
 
-    test(my_model, test_loader, f"on_test_k_my_tr_{test_k}.jpg", f"loss_on_test_k_my_tr_{test_k}.jpg", k=test_k)
+    # test(my_model, test_loader, f"on_test_k_my_tr_{test_k}.jpg", f"loss_on_test_k_my_tr_{test_k}.jpg", k=test_k)
 
-    test(my_model, train_loader, f"on_train_k_my_tr_{test_k}.jpg", f"loss_on_train_my_tr_k_{test_k}.jpg", k=test_k)
+    # test(my_model, train_loader, f"on_train_k_my_tr_{test_k}.jpg", f"loss_on_train_my_tr_k_{test_k}.jpg", k=test_k)
 
     # datas_test = DoorsDataset3(
     #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
