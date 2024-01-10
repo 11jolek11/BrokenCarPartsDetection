@@ -83,7 +83,8 @@ class RBM(nn.Module):
         ht = torch.sum(temp, dim=1)
         return -vt - ht
 
-    def reconstruct(self, image, size=128, to_image: bool = False):
+    def reconstruct(self, image, size=128, to_image: bool = True):
+        self.to(DEVICE)
         self.eval()
         image = image.reshape((-1, self.number_of_visible))
         image = image.to(DEVICE)
@@ -93,7 +94,9 @@ class RBM(nn.Module):
         v = v.reshape((1, size, size))
 
         if to_image:
-            return T.ToPILImage()(v)
+            transformer = T.ToPILImage()
+            temp = transformer(v)
+            return temp
 
         return v
 
@@ -127,6 +130,8 @@ def train(model, data_loader, lr, epochs_number: int, parts: [str], optimizer, *
         # for batch in data_loader:
         with tqdm(data_loader, unit="batch") as tepoch:
             for batch in tepoch:
+                # NOTE: technicznie to nie batch tylko pojedyncze zdjęcie bo na tym RBM się może uczyć
+                # poza tym cały dataset mógłby nie zmieścić się w pamięci
         # with alive_bar(len(data_loader), title=f"Epoch [{epoch}/{epochs_number}] ") as bar:
         #     for batch in data_loader:
                 tepoch.set_description(f"Epoch {epoch+1}/{epochs_number} ")

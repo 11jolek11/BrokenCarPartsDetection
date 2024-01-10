@@ -63,6 +63,21 @@ my_transforms = v2.Compose([
     v2.ToTensor(),
     v2.ToDtype(torch.float32, scale=True)
 ])
+
+
+my_transforms_only_image = v2.Compose([
+    v2.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0)),
+    ColorToHSV(),
+    GaussianBlur((13, 13)),
+    BilateralFilter(15, 75, 75),
+    RemoveInnerContours(),
+    # Erode((30, 30)),
+    # GaussianBlur((3, 3)),
+    FindBoundingBoxAndCrop(),
+    Resize((128, 128)),
+    Binarize(),
+])
+
 class DoorsDataset2(Dataset):
     def __init__(self, img_dir, annotation_file, transform=None):
         self.annotation_file = Path(annotation_file)
