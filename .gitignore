@@ -1,5 +1,5 @@
 #data/
-models/
+./models/
 notebooks/CarPartsDatasetExperimentDir/
 logs/
 checkpoint/
@@ -297,3 +297,11 @@ pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm+all,jupyternotebooks,virtualenv,venv
 /data
+
+#Images
+**/*.jpg
+**/*.jpeg
+
+**/*.png
+
+models/

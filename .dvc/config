@@ -1,5 +1,6 @@
 [core]
     remote = vault
+    autostage = true
 ['remote "vault"']
     url = gdrive://0AG-2DkTEXUhaUk9PVA
     gdrive_acknowledge_abuse = true
