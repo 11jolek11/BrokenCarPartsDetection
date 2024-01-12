@@ -22,12 +22,15 @@ import segmentation_models as sm
 from torch.utils.data import Dataset, ConcatDataset, DataLoader, random_split
 import torch
 
+from random import choices
+
 
 class DemoTransform(Dataset):
-    def __init__(self, frame, masks, legend: dict[str, np.ndarray], transform=None):
+    def __init__(self, frame, masks, legend: dict[str, np.ndarray], transform=None, target_size=(512, 512)):
         self.frame = frame
         self.masks = masks
         self.legend = legend
+        self.target_size = target_size
         self.masks_selection = tuple(self.legend.keys())
         self.transform = transform
 
@@ -35,10 +38,15 @@ class DemoTransform(Dataset):
         return len(self.masks_selection)
 
     def __getitem__(self, index):
+        if self.frame.size != self.masks[index].size:
+            frame = cv2.resize(self.frame, self.target_size, interpolation=cv2.INTER_AREA)
+        else:
+            frame = self.frame
+
         mask = self.masks[:, :, self.legend[self.masks_selection[index]]]
-        cut_first = self.frame[:, :, 0] * mask
-        cut_second = self.frame[:, :, 1] * mask
-        cut_third = self.frame[:, :, 2] * mask
+        cut_first = frame[:, :, 0] * mask
+        cut_second = frame[:, :, 1] * mask
+        cut_third = frame[:, :, 2] * mask
 
         img = np.dstack((cut_first, cut_second, cut_third))
 
@@ -238,101 +246,127 @@ def test_dis(model, test_data_loader, loss_function):
     plt.show()
 
 
-class VideoReader:
-    def __init__(self):
-        self.video = None
-        self.raw_path = Path()
-        self.frames = []
-
-    def read(self, raw_path: Path):
-        self.raw_path = Path(raw_path)
-        self.video = None
-        if raw_path.is_file():
-            self.video = cv2.VideoCapture(str(raw_path))
-        else:
-            raise FileNotFoundError(f"{raw_path} does not exist")
-
-    def select_frames(self):
-        frames_placeholder = []
-        while self.video.isOpened():
-            ret, frame = self.video.read()
-
-            if ret:
-                frames_placeholder.append(frame)
-
-
 img_transformer = v2.Compose([
     v2.ToTensor(),
     v2.ToDtype(torch.float32, scale=True)
 ])
+
 
 def split_len(dataset: DisDataset, test_proportion: float):
     test_len = int(test_proportion * len(dataset))
     train_len = len(dataset) - test_len
     return train_len, test_len
 
-if __name__ == '__main__':
-    demo = Demo()
-
-    path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages"
-    broken_path = "C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/training/00-damage"
-
-    # data_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    model = Dis(128 * 128)
-
-    temp_good = DisDataset(path, demo, 1, transform=img_transformer)
-    temp_bad = DisDataset(broken_path, demo, 0, transform=img_transformer)
-
-    test_prop = 0.2
-
-    good, good_test = random_split(temp_good, split_len(temp_good, test_prop))
-    bad, bad_test = random_split(temp_bad, split_len(temp_bad, test_prop))
-
-    con = ConcatDataset([good, bad])
-    con_test = ConcatDataset([good_test, bad_test])
-
-    # train_data_loader = DataLoader(con, batch_size=1, shuffle=True)
+# if __name__ == '__main__':
+#     pass
+    # demo = Demo()
+    #
+    # path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages"
+    # broken_path = "C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/training/00-damage"
+    #
+    # # data_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+    # model = Dis(128 * 128)
+    #
+    # temp_good = DisDataset(path, demo, 1, transform=img_transformer)
+    # temp_bad = DisDataset(broken_path, demo, 0, transform=img_transformer)
+    #
+    # test_prop = 0.2
+    #
+    # good, good_test = random_split(temp_good, split_len(temp_good, test_prop))
+    # bad, bad_test = random_split(temp_bad, split_len(temp_bad, test_prop))
+    #
+    # con = ConcatDataset([good, bad])
+    # con_test = ConcatDataset([good_test, bad_test])
+    #
+    # # train_data_loader = DataLoader(con, batch_size=1, shuffle=True)
+    # # test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
+    #
+    # train_data_loader = DataLoader(con, batch_size=10, shuffle=True)
     # test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
+    #
+    # loss_f = torch.nn.BCELoss()
+    #
+    # post_train_model, train_losses = train_dis(model, train_data_loader, loss_f, 0.0001)
+    #
+    # plt.clf()
+    # plt.plot(train_losses)
+    # plt.title("Training Loss")
+    # plt.show()
+    #
+    # test_dis(post_train_model, test_data_loader, loss_f)
 
-    train_data_loader = DataLoader(con, batch_size=10, shuffle=True)
-    test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
-
-    loss_f = torch.nn.BCELoss()
-
-    post_train_model, train_losses = train_dis(model, train_data_loader, loss_f, 0.0001)
-
-    plt.clf()
-    plt.plot(train_losses)
-    plt.title("Training Loss")
-    plt.show()
-
-    test_dis(post_train_model, test_data_loader, loss_f)
 
 # if __name__ == "__main__":
-# import random
-# from PIL import Image
+#     import random
+#     from PIL import Image
+#     from video import VideoFrameExtract
 #
-# demo = Demo()
-# path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/JPEGImages/car4.jpg"
-# broken:
-# path = C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/validation/00-damage/0001.JPEG
-# image = cv2.imread(path)
-# fr, recon_dict = demo.forward(image)
+#     demo = Demo()
+#     path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/JPEGImages/car4.jpg"
+#     # broken:
+#     # path = C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/validation/00-damage/0001.JPEG
+#     image = cv2.imread(path)
 #
-# test_image = recon_dict[random.choice(list(recon_dict.keys()))]
-# print(len(recon_dict.values()))
-# test_image.show()
+#     fr, recon_dict = demo.forward(image)
+#
+#     test_image = recon_dict[random.choice(list(recon_dict.keys()))]
+#     print(len(recon_dict.values()))
+#     test_image.show()
+#
+#     original, reconstructed = demo.forward(image)
+#
+#     label = random.choice(list(reconstructed.keys()))
+#
+#     img = Image.fromarray(original)
+#     img.show(f"Image of original {label}")
+#     # print(type(reconstructed[label]))
+#
+#     reconstructed[label].show(f"Image of reconstructed {label}")
+#     print(reconstructed[label].shape)
+#
+#     img = Image.fromarray(reconstructed[label])
+#     img.show(f"Image of reconstructed {label}")
 
-# original, reconstructed = demo.forward(image)
-#
-# label = random.choice(list(reconstructed.keys()))
-#
-# img = Image.fromarray(original)
-# img.show(f"Image of original {label}")
-## print(type(reconstructed[label]))
-#
-# reconstructed[label].show(f"Image of reconstructed {label}")
-# print(reconstructed[label].shape)
 
-# img = Image.fromarray(reconstructed[label])
-# img.show(f"Image of reconstructed {label}")
+if __name__ == "__main__":
+    import random
+    from PIL import Image
+    from video import VideoFrameExtract
+
+    demo = Demo()
+    # path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/JPEGImages/car4.jpg"
+    # broken:
+    # path = C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/validation/00-damage/0001.JPEG
+    # image = cv2.imread(path)
+
+    #### VIDEO DEMO
+
+    video_reader = VideoFrameExtract()
+    video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001/000001.mp4")
+    frames, _ = video_reader.select_frames(10)
+    # for single_frame in frames:
+    #     cv2.imshow('frame', single_frame)
+    #     cv2.waitKey(0)
+
+    ### END VIDEO DEMO
+    fr, recon_dict = demo.forward(frames[0])
+
+    test_image = recon_dict[random.choice(list(recon_dict.keys()))]
+    print(len(recon_dict.values()))
+    test_image.show()
+
+    original, reconstructed = demo.forward(frames[0])
+
+    label = random.choice(list(reconstructed.keys()))
+
+    img = Image.fromarray(original)
+    img.show(f"Image of original {label}")
+    # print(type(reconstructed[label]))
+
+    reconstructed[label].show(f"Image of reconstructed {label}")
+    print(reconstructed[label].size)
+
+    print(f"Conf type: {type(reconstructed[label])}")
+    # img = Image.fromarray(reconstructed[label])
+    # img.show(f"Image of reconstructed {label}")
+    reconstructed[label].show(f"Image of reconstructed {label}")
