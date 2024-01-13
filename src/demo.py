@@ -22,8 +22,6 @@ import segmentation_models as sm
 from torch.utils.data import Dataset, ConcatDataset, DataLoader, random_split
 import torch
 
-from random import choices
-
 
 class DemoTransform(Dataset):
     def __init__(self, frame, masks, legend: dict[str, np.ndarray], transform=None, target_size=(512, 512)):
@@ -92,12 +90,7 @@ class Demo:
 
         for part_no in range(len(data)):
             data_temp, mask_temp = data[part_no]
-            # print(type(data_temp))
-            # cv2.imshow(mask_temp, data_temp)
-            # cv2.waitKey(0)
 
-            # print(type(data_temp))
-            # print(mask_temp)
             _, temp = self.recon_block.reconstruct(*data[part_no])
             reconstructed_parts.update(temp)
 
@@ -143,10 +136,8 @@ class DisDataset(Dataset):
             for item in list(recon.values()):
                 if self.transform:
                     item = self.transform(item)
-                    # self.data_type = self.transform(np.array([self.data_type])) # ValueError: pic should be 2/3 dimensional. Got 1 dimensions.
 
                     # FIXME(11jolek11): self.data_type is int not torch.Tensor with dtype.float32
-                    # self.data_type.dtype
                 self.clear_recon.append(item)
 
     def __len__(self):
@@ -181,8 +172,6 @@ class Dis(nn.Module):
 
 
 def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
-    # data_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    # test_data_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
     model = model.to(DEVICE)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -196,11 +185,6 @@ def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
         total_loss = 0.0
 
         print(len(train_data_loader))
-        # with tqdm(train_data_loader) as t_train_data_loader:
-            # test_batch, test_label = t_train_data_loader
-            # print(f"Batch[0] type: {type(test_batch)}")
-            # print(f"Labels[0] type: {type(test_label)}")
-            # for batch, labels in t_train_data_loader:
         for batch, labels in train_data_loader:
             print(f"Batch type: {type(batch)}")
             print(f"Labels type: {type(labels)}")
@@ -257,76 +241,6 @@ def split_len(dataset: DisDataset, test_proportion: float):
     train_len = len(dataset) - test_len
     return train_len, test_len
 
-# if __name__ == '__main__':
-#     pass
-    # demo = Demo()
-    #
-    # path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/JPEGImages"
-    # broken_path = "C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/training/00-damage"
-    #
-    # # data_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    # model = Dis(128 * 128)
-    #
-    # temp_good = DisDataset(path, demo, 1, transform=img_transformer)
-    # temp_bad = DisDataset(broken_path, demo, 0, transform=img_transformer)
-    #
-    # test_prop = 0.2
-    #
-    # good, good_test = random_split(temp_good, split_len(temp_good, test_prop))
-    # bad, bad_test = random_split(temp_bad, split_len(temp_bad, test_prop))
-    #
-    # con = ConcatDataset([good, bad])
-    # con_test = ConcatDataset([good_test, bad_test])
-    #
-    # # train_data_loader = DataLoader(con, batch_size=1, shuffle=True)
-    # # test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
-    #
-    # train_data_loader = DataLoader(con, batch_size=10, shuffle=True)
-    # test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
-    #
-    # loss_f = torch.nn.BCELoss()
-    #
-    # post_train_model, train_losses = train_dis(model, train_data_loader, loss_f, 0.0001)
-    #
-    # plt.clf()
-    # plt.plot(train_losses)
-    # plt.title("Training Loss")
-    # plt.show()
-    #
-    # test_dis(post_train_model, test_data_loader, loss_f)
-
-
-# if __name__ == "__main__":
-#     import random
-#     from PIL import Image
-#     from video import VideoFrameExtract
-#
-#     demo = Demo()
-#     path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/JPEGImages/car4.jpg"
-#     # broken:
-#     # path = C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/validation/00-damage/0001.JPEG
-#     image = cv2.imread(path)
-#
-#     fr, recon_dict = demo.forward(image)
-#
-#     test_image = recon_dict[random.choice(list(recon_dict.keys()))]
-#     print(len(recon_dict.values()))
-#     test_image.show()
-#
-#     original, reconstructed = demo.forward(image)
-#
-#     label = random.choice(list(reconstructed.keys()))
-#
-#     img = Image.fromarray(original)
-#     img.show(f"Image of original {label}")
-#     # print(type(reconstructed[label]))
-#
-#     reconstructed[label].show(f"Image of reconstructed {label}")
-#     print(reconstructed[label].shape)
-#
-#     img = Image.fromarray(reconstructed[label])
-#     img.show(f"Image of reconstructed {label}")
-
 
 if __name__ == "__main__":
     import random
@@ -334,21 +248,10 @@ if __name__ == "__main__":
     from video import VideoFrameExtract
 
     demo = Demo()
-    # path = "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/JPEGImages/car4.jpg"
-    # broken:
-    # path = C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/validation/00-damage/0001.JPEG
-    # image = cv2.imread(path)
-
-    #### VIDEO DEMO
 
     video_reader = VideoFrameExtract()
     video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001/000001.mp4")
     frames, _ = video_reader.select_frames(10)
-    # for single_frame in frames:
-    #     cv2.imshow('frame', single_frame)
-    #     cv2.waitKey(0)
-
-    ### END VIDEO DEMO
     fr, recon_dict = demo.forward(frames[0])
 
     test_image = recon_dict[random.choice(list(recon_dict.keys()))]
@@ -361,12 +264,9 @@ if __name__ == "__main__":
 
     img = Image.fromarray(original)
     img.show(f"Image of original {label}")
-    # print(type(reconstructed[label]))
 
     reconstructed[label].show(f"Image of reconstructed {label}")
     print(reconstructed[label].size)
 
     print(f"Conf type: {type(reconstructed[label])}")
-    # img = Image.fromarray(reconstructed[label])
-    # img.show(f"Image of reconstructed {label}")
     reconstructed[label].show(f"Image of reconstructed {label}")

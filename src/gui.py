@@ -254,8 +254,6 @@ if __name__ == '__main__':
     image = Image.open(r"C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png")
     image = image.resize((128, 128))
 
-    print(len(gui.results))
-
     gui.push_record_on_scroll("Test1", image, image, "broken")
 
     print(len(gui.results))
