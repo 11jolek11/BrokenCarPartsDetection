@@ -8,6 +8,7 @@ import copy
 
 import cv2
 import numpy as np
+import PIL
 
 
 MAX_EXAMPLE_VIDS = 4  # TODO(11jolek11): REMOVE
@@ -97,11 +98,56 @@ class Gui:
         self._root = tk.Tk()
         self._root.geometry("700x700")
         self._filepath = Path()
-        self._temp_images = None
-        self._temp_preview_handlers = None
+
+        self.labels_images = []
+        self.preview_video_handlers = []
+
+        self._temp_original_img_frame = []
+        self._temp_recon_img_frame = []
+
+        self.results = []
+
+        self._canvas = None
+        self._scrollbar = None
+        self._scrollable_frame = None
+
+    def _create_result_frame(self, parent_frame, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image, state: str):
+        frame = ttk.Frame(parent_frame)
+        part_name_label = ttk.Label(frame, text=part_name)
+        state_label = ttk.Label(frame, text=state)
+
+        original_img_frame = ImageTk.PhotoImage(original_frame)
+        self._temp_original_img_frame.append(original_img_frame)
+        original_img_label = ttk.Label(frame, image=original_img_frame)
+
+        recon_img_frame = ImageTk.PhotoImage(recon_frame)
+        self._temp_recon_img_frame.append(recon_img_frame)
+        recon_img_label = ttk.Label(frame, image=recon_img_frame)
+
+        part_name_label.pack(side=tk.LEFT)
+        original_img_label.pack(side=tk.LEFT)
+        recon_img_label.pack(side=tk.LEFT)
+        state_label.pack(side=tk.LEFT)
+
+        return frame
+
+    def push_record_on_scroll(self, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image, state: str):
+        frame = self._create_result_frame(self._scrollable_frame, part_name, original_frame, recon_frame, state)
+        self.results.append(frame)
+        frame.pack()
+        self._root.update()
 
     def ask_file_path(self):
         self._filepath = Path(askopenfilename())
+
+    def lol(self):
+        image = Image.open(r"C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png")
+        image = image.resize((32, 32))
+
+        print(len(gui.results))
+
+        for _ in range(3):
+            self.push_record_on_scroll("Test1", image, image, "broken")
 
     def create_run_frame(self, parent_frame):
         frame = ttk.Frame(parent_frame, width=200, height=200)
@@ -111,19 +157,15 @@ class Gui:
         file_upload_btn = ttk.Button(frame, text="Upload", command=self.ask_file_path)
         file_upload_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        run_btn = ttk.Button(frame, text="Run")
+        # TODO(11jolek11): Remove dummy function 'lol'
+        run_btn = ttk.Button(frame, text="Run", command=self.lol)
         run_btn.pack(side=tk.LEFT, fill=tk.X)
 
         return frame
 
-    def create_presentation_frame(self, parent_frame):
-        pass
-
     def create_example_videos_frame(self, parent_frame):
         frame = ttk.Frame(parent_frame, width=150, height=150)
         labels = []
-        labels_images = []
-        preview_video_handlers = []
 
         examples = explore_examples("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001")
 
@@ -137,7 +179,7 @@ class Gui:
             label = ttk.Label(subframe, image=img)
             label.pack(side=tk.LEFT, expand=True)
             labels.append(label)
-            labels_images.append(img)
+            self.labels_images.append(img)
 
             print(str(video["file"].absolute()))
 
@@ -147,21 +189,73 @@ class Gui:
 
             subframe.pack()
 
-        return frame, labels_images, preview_video_handlers
+        return frame
+
+    def create_presentation_frame(self, parent_frame):
+        frame = ttk.Frame(parent_frame)
+
+        self._canvas = tk.Canvas(frame)
+        self._scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self._canvas.yview)
+        self._scrollable_frame = ttk.Frame(self._canvas)
+
+        self._scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self._canvas.configure(
+                scrollregion=self._canvas.bbox("all")
+            )
+        )
+
+        self._canvas.create_window((0, 0), window=self._scrollable_frame, anchor="nw")
+
+        self._canvas.configure(yscrollcommand=self._scrollbar.set)
+
+        # for i in range(50):
+        #     ttk.Label(self._scrollable_frame, text="Sample scrolling label").pack()
+
+        for result in self.results:
+            result.pack()
+
+        # frame.pack()
+        self._canvas.pack(side="left", fill="both", expand=True)
+        self._scrollbar.pack(side="right", fill="y")
+
+        return frame
 
     def build(self):
-        # self._root.columnconfigure(0)
-        self.create_run_frame(self._root).pack(anchor=tk.NW)
-        frame, self._temp_images, self._temp_preview_handlers = self.create_example_videos_frame(self._root)
+        user_frame = tk.Frame(self._root)
+
+        self.create_run_frame(user_frame).pack(anchor=tk.NW)
+        frame = self.create_example_videos_frame(user_frame)
         frame.pack(anchor=tk.W, expand=True)
+
+        user_frame.pack(side=tk.LEFT)
+
+        self.create_presentation_frame(self._root).pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
     def run(self):
         self._root.mainloop()
 
 
+# if __name__ == '__main__':
+#     gui = Gui()
+#     gui.build()
+#     gui.run()
+
+
 if __name__ == '__main__':
     gui = Gui()
     gui.build()
-    gui.run()
 
-    # explore_examples("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001")
+    # C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png
+    # C:/Users/dabro/OneDrive/Obrazy/IMG_0001_3 ret.jpg
+
+    image = Image.open(r"C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png")
+    image = image.resize((128, 128))
+
+    print(len(gui.results))
+
+    gui.push_record_on_scroll("Test1", image, image, "broken")
+
+    print(len(gui.results))
+
+    gui.run()
