@@ -11,7 +11,7 @@ import numpy as np
 import PIL
 
 
-MAX_EXAMPLE_VIDS = 4  # TODO(11jolek11): REMOVE
+MAX_EXAMPLE_VIDS = 4
 
 
 def explore_examples(video_dir: str, target_shape: tuple[int, int] = (120, 120)):
@@ -22,7 +22,7 @@ def explore_examples(video_dir: str, target_shape: tuple[int, int] = (120, 120))
     if video_dir.is_dir():
         video_filenames = list(video_dir.glob("*.mp4"))
 
-    i = 0  # TODO(11jolek11): REMOVE
+    i = 0
 
     for video_filename in video_filenames:
 
@@ -140,15 +140,6 @@ class Gui:
     def ask_file_path(self):
         self._filepath = Path(askopenfilename())
 
-    def lol(self):
-        image = Image.open(r"C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png")
-        image = image.resize((32, 32))
-
-        print(len(gui.results))
-
-        for _ in range(3):
-            self.push_record_on_scroll("Test1", image, image, "broken")
-
     def create_run_frame(self, parent_frame):
         frame = ttk.Frame(parent_frame, width=200, height=200)
         frame.columnconfigure(0, weight=2)
@@ -157,8 +148,7 @@ class Gui:
         file_upload_btn = ttk.Button(frame, text="Upload", command=self.ask_file_path)
         file_upload_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # TODO(11jolek11): Remove dummy function 'lol'
-        run_btn = ttk.Button(frame, text="Run", command=self.lol)
+        run_btn = ttk.Button(frame, text="Run")
         run_btn.pack(side=tk.LEFT, fill=tk.X)
 
         return frame
@@ -193,6 +183,18 @@ class Gui:
 
     def create_presentation_frame(self, parent_frame):
         frame = ttk.Frame(parent_frame)
+
+        legend_frame = ttk.Frame(frame)
+
+        legend_names = ["Część", "Orginał", "Rekonstrukcja", "Status"]
+        legend_labels = []
+
+        for legend in legend_names:
+            temp_label = ttk.Label(legend_frame, text=legend)
+            temp_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            legend_labels.append(temp_label)
+
+        legend_frame.pack()
 
         self._canvas = tk.Canvas(frame)
         self._scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self._canvas.yview)
