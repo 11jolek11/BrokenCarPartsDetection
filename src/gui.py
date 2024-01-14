@@ -151,7 +151,7 @@ class Gui:
         state_label.pack(side=tk.LEFT)
 
         return frame
-    # FIXME(11jolek11):
+
     def push_record_on_scroll(self, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image, state: str):
         frame = self._create_result_frame(self._scrollable_frame, part_name, original_frame, recon_frame, state)
         self.results.append(frame)
