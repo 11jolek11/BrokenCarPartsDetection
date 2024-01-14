@@ -287,12 +287,23 @@ if __name__ == "__main__":
 
     original, reconstructed = demo.forward(frames[0])
 
+    random.seed(42)
     label = random.choice(list(reconstructed.keys()))
 
     img = Image.fromarray(original)
-    img.show(f"Image of original {label}")
+    # img.show(f"Image of original {label}")
 
-    reconstructed[label]["recon"].show(f"Image of reconstructed {label}")
+    # reconstructed[label]["recon"].show(f"Image of reconstructed {label}")
     print(reconstructed[label]["recon"].size)
 
-    reconstructed[label]["recon"].show(f"Image of reconstructed {label}")
+    # reconstructed[label]["recon"].show(f"Image of reconstructed {label}")
+
+    # color_coverted = cv2.cvtColor(reconstructed[label]["cutoff"], cv2.COLOR_BGR2RGB)
+    color_coverted = reconstructed[label]["cutoff"]
+    cv2.imshow("lol", color_coverted)
+    cv2.waitKey(0)
+
+    color_coverted = color_coverted.astype(np.uint8)
+    a = Image.fromarray(color_coverted)
+    a.show()
+

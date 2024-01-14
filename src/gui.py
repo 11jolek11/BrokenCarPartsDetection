@@ -10,7 +10,6 @@ import cv2
 import numpy as np
 import PIL
 
-
 MAX_EXAMPLE_VIDS = 4
 
 
@@ -55,7 +54,7 @@ def explore_examples(video_dir: str, target_shape: tuple[int, int] = (120, 120))
 
         video_list.append(video)
 
-    print(f"Found {len(video_list)} videos")
+    print(f"Found {len(video_list)} example videos")
 
     return video_list
 
@@ -94,6 +93,7 @@ class Gui:
         self._root = tk.Tk()
         self._root.geometry("700x700")
         self._filepath = Path()
+        self.examples_dir = Path()
 
         self.labels_images = []
         self.preview_video_handlers = []
@@ -107,7 +107,32 @@ class Gui:
         self._scrollbar = None
         self._scrollable_frame = None
 
-    def _create_result_frame(self, parent_frame, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image, state: str):
+        self.run_btn = ttk.Button()
+
+        self.run_action = None
+
+    def set_examples_dir(self, examples_dir: str):
+        if Path(examples_dir).is_dir():
+            self.examples_dir = Path(examples_dir)
+        else:
+            print("Invalid examples directory")
+
+    def get_root(self):
+        return self._root
+
+    def assign_action_to_play_button(self, funct):
+        print("Assigning action to play button")
+        self.run_btn.configure(command=funct)
+
+    def add_action(self, funct):
+        self.run_action = funct
+
+    def assign_action_with_filename_to_play_button(self):
+        print("Assigning action to play button")
+        self.run_btn.configure(command=self.run_action(self._filepath))
+
+    def _create_result_frame(self, parent_frame, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image,
+                             state: str):
         frame = ttk.Frame(parent_frame)
         part_name_label = ttk.Label(frame, text=part_name)
         state_label = ttk.Label(frame, text=state)
@@ -126,7 +151,7 @@ class Gui:
         state_label.pack(side=tk.LEFT)
 
         return frame
-
+    # FIXME(11jolek11):
     def push_record_on_scroll(self, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image, state: str):
         frame = self._create_result_frame(self._scrollable_frame, part_name, original_frame, recon_frame, state)
         self.results.append(frame)
@@ -134,7 +159,10 @@ class Gui:
         self._root.update()
 
     def ask_file_path(self):
-        self._filepath = Path(askopenfilename())
+        choice = askopenfilename()
+        self._filepath = Path(choice)
+        print("Chosen filename: ", str(self._filepath))
+        self.assign_action_with_filename_to_play_button()
 
     def create_run_frame(self, parent_frame):
         frame = ttk.Frame(parent_frame, width=200, height=200)
@@ -144,8 +172,8 @@ class Gui:
         file_upload_btn = ttk.Button(frame, text="Upload", command=self.ask_file_path)
         file_upload_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        run_btn = ttk.Button(frame, text="Run")
-        run_btn.pack(side=tk.LEFT, fill=tk.X)
+        self.run_btn = ttk.Button(frame, text="Run")
+        self.run_btn.pack(side=tk.LEFT, fill=tk.X)
 
         return frame
 
@@ -153,7 +181,7 @@ class Gui:
         frame = ttk.Frame(parent_frame, width=150, height=150)
         labels = []
 
-        examples = explore_examples("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001")
+        examples = explore_examples(str(self.examples_dir.absolute()))
 
         welcome_label = ttk.Label(frame, text="Wybierz video z przykładów")
         welcome_label.pack(side=tk.TOP, fill=tk.X, expand=True)
@@ -169,7 +197,8 @@ class Gui:
 
             print(str(video["file"].absolute()))
 
-            preview_button = ttk.Button(subframe, text='Preview', command=partial(play_video, str(video["file"].absolute())))
+            preview_button = ttk.Button(subframe, text='Preview',
+                                        command=partial(play_video, str(video["file"].absolute())))
 
             preview_button.pack(side=tk.RIGHT)
 
@@ -238,17 +267,27 @@ class Gui:
 
 
 if __name__ == '__main__':
+
+    def hello(filename):
+        return lambda: print("hello world {}".format(filename))
+
     gui = Gui()
+    gui.set_examples_dir("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001")
     gui.build()
+    gui.add_action(hello)
+    gui.assign_action_with_filename_to_play_button()
 
     # C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png
     # C:/Users/dabro/OneDrive/Obrazy/IMG_0001_3 ret.jpg
 
-    image = Image.open(r"C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png")
-    image = image.resize((128, 128))
-
-    gui.push_record_on_scroll("Test1", image, image, "broken")
-
-    print(len(gui.results))
+    # image = Image.open(r"C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png")
+    # image = image.resize((128, 128))
+    #
+    # gui.push_record_on_scroll("Test1", image, image, "broken")
+    #
+    # print(len(gui.results))
+    #
+    # root = gui.get_root()
+    # print(root.children)
 
     gui.run()
