@@ -1,3 +1,5 @@
+# README FIRST !!!
+# Kod testowy
 from torchvision.transforms import v2
 from transforms import GaussianBlur, BilateralFilter, Erode, Canny, FindBoundingBoxAndCrop, Resize, Binarize, ColorToHSV, RemoveInnerContours
 import torch

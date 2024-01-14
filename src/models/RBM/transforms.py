@@ -13,7 +13,7 @@ class Canny(torch.nn.Module):
         edges = cv2.Canny(image=sample, threshold1=self.threshold[0], threshold2=self.threshold[1])
         return edges
 
-# TODO(11jolek11): Zrobić tak jak u Łukaszewskiego filtrować wartości RGB i podbijać gradient na krawędziach
+
 class GaussianBlur(torch.nn.Module):
     def __init__(self, kernel_size: Tuple[int, int], sigma_x=0, sigma_y=0, *args, **kwargs):
         super().__init__(*args, **kwargs)

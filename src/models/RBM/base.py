@@ -19,18 +19,6 @@ from pathlib import Path
 from .door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2, CarDataset, train_transforms, my_transforms
 from src.settings import DEVICE
 
-# folder = "../../../logs/runs/"
-# for filename in os.listdir(folder):
-#     file_path = os.path.join(folder, filename)
-#     try:
-#         if os.path.isfile(file_path) or os.path.islink(file_path):
-#             os.unlink(file_path)
-#         elif os.path.isdir(file_path):
-#             shutil.rmtree(file_path)
-#     except Exception as e:
-#         print('Failed to delete %s. Reason: %s' % (file_path, e))
-# summary_writer = SummaryWriter("../../../logs/runs/", flush_secs=30)
-
 
 class RBM(nn.Module):
     def __init__(self, number_of_visible, number_of_hidden, k=3, *args, **kwargs):
@@ -75,7 +63,6 @@ class RBM(nn.Module):
         v, pvh = self.sample_v_from_h(phv)
         return v
 
-    # TODO(11jolek11): Use reconstruction loss as a loss?
     # loss aka "free energy"
     def loss(self, v):
         vt = torch.matmul(v, torch.t(self.bias_v))

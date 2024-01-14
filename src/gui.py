@@ -35,7 +35,7 @@ def explore_examples(video_dir: str, target_shape: tuple[int, int] = (120, 120))
         cap = cv2.VideoCapture(str(video_filename.absolute()))
         video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) - 1
         if cap.isOpened() and video_length > 0:
-            # FIXME(11jolek11): sample thumbnail from random frame not from first!!!
+            # FIXME(11jolek11): sample thumbnail from random frame not from first frame!!!
             for _ in range(video_length):
                 flag, frame = cap.read()
                 if flag:
@@ -61,20 +61,16 @@ def explore_examples(video_dir: str, target_shape: tuple[int, int] = (120, 120))
 
 
 def play_video(video_path: str):
-    # Create a VideoCapture object and read from input file
     cap = cv2.VideoCapture(video_path)
 
-    # Check if camera opened successfully
     if not cap.isOpened():
         print("Error opening video file")
 
         # Read until video is completed
     while cap.isOpened():
 
-        # Capture frame-by-frame
         ret, frame = cap.read()
         if ret:
-            # Display the resulting frame
             cv2.imshow('Frame', frame)
 
             # Press Q on keyboard to exit
@@ -210,9 +206,6 @@ class Gui:
         self._canvas.create_window((0, 0), window=self._scrollable_frame, anchor="nw")
 
         self._canvas.configure(yscrollcommand=self._scrollbar.set)
-
-        # for i in range(50):
-        #     ttk.Label(self._scrollable_frame, text="Sample scrolling label").pack()
 
         for result in self.results:
             result.pack()

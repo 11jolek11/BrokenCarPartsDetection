@@ -200,7 +200,6 @@ class DoorsDataset3(Dataset):
         mask = self.coco.annToMask(self.anns[index])
         imgs = self.coco.loadImgs([self.anns[index]["image_id"]])[0]
         img_path = Path((str(self.img_dir) + "/" + imgs["path"]))
-        # print(str(img_path.absolute()))
         img = cv2.imread(str(img_path.absolute()))
 
         # Mask decomposition
@@ -276,7 +275,6 @@ class DoorsDatasetSaver(Dataset):
         mask = self.coco.annToMask(self.anns[index])
         imgs = self.coco.loadImgs([self.anns[index]["image_id"]])[0]
         img_path = Path((str(self.img_dir) + "/" + imgs["path"]))
-        # print(str(img_path.absolute()))
         img = cv2.imread(str(img_path.absolute()))
 
         # Mask decomposition
@@ -356,12 +354,10 @@ class CarDataset(Dataset):
             self.experiment_dict[name] = annIds
             print(f"{name} -- {len(imgIds)} -- {len(annIds)}")
 
-        # self.anns = self.coco.loadAnns(list(anns_by_cat))
         self.anns = []
 
         for part in self.parts:
             self.anns.extend(self.experiment_dict[part])
-        # print(self.anns)
         self.anns = self.coco.loadAnns(list(self.anns))
 
     def __len__(self):
@@ -386,9 +382,7 @@ class CarDataset(Dataset):
         cut_third = third * mask
 
         img = np.dstack((cut_first, cut_second, cut_third))
-        # img_path = Path(self._available_files[index])
-        # print(str(img_path.absolute()))
-        # img = cv2.imread(str(img_path.absolute()))
+
         if self.transform:
             img = self.transform(img)
         return img

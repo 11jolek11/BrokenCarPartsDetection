@@ -5,15 +5,6 @@ from PIL import Image
 import cv2
 
 
-# class HandleModel:
-#     def __init__(self, model_path: Path) -> None:
-#         self.model_path = model_path
-#         self.model_lib = None
-#         # h5 tensorflow
-#         # pth torch
-#         self.model = None
-
-
 class SegmentationModel:
     def __init__(self, class_names, model_class, model_path: Path, *args, **kwargs) -> None:
         self.model_path = model_path
@@ -29,7 +20,6 @@ class SegmentationModel:
             raise NotImplementedError("Torch models handling is not supported yet")
 
     def preprocess_image(self, img):
-        # img = Image.open(path_img)
         img = Image.fromarray(img.astype('uint8'), 'RGB')
         ww = 512
         hh = 512
@@ -52,8 +42,6 @@ class SegmentationModel:
 
         class_names_colors = enumerate(class_names[:n_classes])
 
-        # print(class_names_colors)
-
         for (i, class_name) in class_names_colors:
             if i in tags:
                 legend[class_name] = i
@@ -66,6 +54,7 @@ class SegmentationModel:
         img_scaled_arr = self.preprocess_image(frame)
         print(frame.size)
         image = np.expand_dims(img_scaled_arr[0], axis=0)
+        # FIXME(11jolek11): pr_mask bad z dimensions
         pr_mask = self.model.predict(image).squeeze()
         pr_mask_int = np.zeros((pr_mask.shape[0], pr_mask.shape[1]))
         kernel = np.ones((5, 5), 'uint8')
