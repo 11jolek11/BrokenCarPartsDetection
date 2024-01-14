@@ -116,4 +116,3 @@ class RemoveInnerContours(torch.nn.Module):
         # Bitwise AND operation to keep only the outer contours
         result = cv2.bitwise_and(edges, mask)
         return result
-

@@ -6,8 +6,10 @@ from pycocotools.coco import COCO
 from torch.utils.data import Dataset
 from torchvision.transforms import v2
 
-from .transforms import *
-
+from transforms import Canny, GaussianBlur, BilateralFilter, Binarize, FindBoundingBoxAndCrop, Resize, Erode, ColorToHSV, RemoveInnerContours
+import cv2
+import torch
+import numpy as np
 
 class DoorsDataset(Dataset):
     def __init__(self, img_dir, transform=None):
@@ -34,15 +36,11 @@ class DoorsDataset(Dataset):
         return img
 
 door_transforms = v2.Compose([
-    # v2.ToImage(),
-    # v2.Resize([32, 32]),  # FIXME(11jolek11): Is not resizing to 32x32
     v2.ToTensor(),
     v2.ToDtype(torch.float32, scale=True)
 ])
 
 door_transforms2 = v2.Compose([
-    # v2.ToImage(),
-    # v2.Resize([32, 32]),  # FIXME(11jolek11): Is not resizing to 32x32
     v2.ToTensor(),
     v2.ToDtype(torch.float32, scale=True)
 ])
@@ -94,22 +92,6 @@ class DoorsDataset2(Dataset):
 
         annIds = self.coco.getAnnIds(imgIds=[img["id"] for img in imgs], catIds=catIds, iscrowd=None)
         self.anns = self.coco.loadAnns(annIds)
-
-        # for i in range(len(anns)):
-        #     mask = coco.annToMask(anns[i])
-        #     img_p = mpimg.imread(f"{data_dir}/{imgs[i]['path']}")
-        #
-        #     # Mask decomposition
-        #     first = img_p[:, :, 0]
-        #     second = img_p[:, :, 1]
-        #     third = img_p[:, :, 2]
-        #
-        #     cut_first = first * mask
-        #     cut_second = second * mask
-        #     cut_third = third * mask
-        #
-        #     cut = np.dstack((cut_first, cut_second, cut_third))
-            # all_cuts.append((cut, f"{data_dir}/{imgs[i]['path']}"))
 
     def __len__(self):
         return len(self.anns)

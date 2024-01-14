@@ -11,7 +11,7 @@ from torchvision.transforms import v2
 from models.RBM.base import RBM
 from models.RBM.door_data import my_transforms
 from models.blocks import ReconstructionModel, SegmentationModel
-from settings import DEVICE
+from src.models.RBM.settings import DEVICE
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 import segmentation_models as sm

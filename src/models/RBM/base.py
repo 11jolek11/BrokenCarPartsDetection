@@ -13,8 +13,8 @@ from torchvision.utils import make_grid
 from tqdm import tqdm
 from win11toast import notify
 
-from src.settings import DEVICE
-from .door_data import CarDataset, my_transforms
+from settings import DEVICE
+from door_data import CarDataset, my_transforms
 
 
 class RBM(nn.Module):
@@ -167,7 +167,7 @@ def train(model, data_loader, lr, epochs_number: int, parts: [str], optimizer, *
     summary_writer.close()
 
     plt.plot(all_loss_by_epoch)
-    plt.savefig(f"all_loss_by_epoch_{train_uuid}")
+    plt.savefig(f"C:/Users/dabro/PycharmProjects/scientificProject/images_cache/all_loss_by_epoch_{train_uuid}")
     notify("RBM model finish", scenario='incomingCall')
 
 
@@ -204,7 +204,7 @@ def test(model, data_loader, file_name, loss_file_name, parts, size=128, k=None)
     # grid = make_grid(list_img)
     # summary_writer.add_images("Compare", grid)
     img = T.ToPILImage()(grid)
-    img.save(file_name)
+    img.save("C:/Users/dabro/PycharmProjects/scientificProject/images_cache/" + file_name)
     print(f"Image saved to {file_name}")
 
 def test3(model, data_loader, file_name, loss_file_name, parts, size=128):
@@ -239,7 +239,7 @@ def test3(model, data_loader, file_name, loss_file_name, parts, size=128):
     # grid = make_grid(list_img)
     # summary_writer.add_images("Compare", grid)
     img = T.ToPILImage()(grid)
-    img.save(file_name)
+    img.save("C:/Users/dabro/PycharmProjects/scientificProject/images_cache/" + file_name)
 
 
 if __name__ == "__main__":
@@ -359,7 +359,7 @@ if __name__ == "__main__":
 
     # my_model = RBM(32 * 32, 512, k=4)
     # epochs number 11
-    train(my_model, train_loader, 0.001, 25, datas.get_parts(), torch.optim.SGD)
+    train(my_model, train_loader, 0.001, 1, datas.get_parts(), torch.optim.SGD)
 
     test_data = CarDataset(
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
