@@ -6,7 +6,7 @@ from pycocotools.coco import COCO
 from torch.utils.data import Dataset
 from torchvision.transforms import v2
 
-from .transforms import Canny, GaussianBlur, BilateralFilter, Binarize, FindBoundingBoxAndCrop, Resize, Erode, ColorToHSV, RemoveInnerContours
+from .transforms.transforms import Canny, GaussianBlur, BilateralFilter, Binarize, FindBoundingBoxAndCrop, Resize, Erode, ColorToHSV, RemoveInnerContours
 import cv2
 import torch
 import numpy as np
@@ -402,7 +402,7 @@ if __name__ == "__main__":
         "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
         parts=["hood", "wheel"]
     )
-    print(f'test data size {len(test_data)}')
+    print(f'test utildata size {len(test_data)}')
 
     # test_loader = DataLoader(dataset=datas_test, batch_size=1, shuffle=True)
     # for image in test_loader:

@@ -9,7 +9,7 @@ from video import VideoFrameExtract
 class Main:
     def __init__(self):
         self.gui = Gui()
-        self.gui.set_examples_dir("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001")
+        self.gui.set_examples_dir("../example_videos")
         self.gui.build()
         self.demo = Demo()
         self.video_reader = VideoFrameExtract()

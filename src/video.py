@@ -39,7 +39,7 @@ class VideoFrameExtract:
 
 if __name__ == '__main__':
     video_reader = VideoFrameExtract()
-    video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001/000001.mp4")
+    video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/utildata/videos/Normal-001/000001.mp4")
     frames, no_of_frames = video_reader.select_frames(10)
 
     print(f"Frames no.: {no_of_frames}")

@@ -1,4 +1,3 @@
-from torch.utils.data import Dataset
 import os
 from pathlib import Path
 
@@ -7,7 +6,7 @@ from torch.utils.data import Dataset
 
 from demo import DemoTransform
 from models.RBM.base import RBM
-from models.RBM.door_data import my_transforms
+from src.models.RBM.utildata.door_data import my_transforms
 from src.models.blocks import SegmentationModel, ReconstructionModel
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"

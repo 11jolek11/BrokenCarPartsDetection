@@ -89,7 +89,7 @@ def play_video(video_path: str):
 class Gui:
     def __init__(self):
         self._root = tk.Tk()
-        self._root.geometry("700x700")
+        self._root.geometry("900x700")
         self._filepath = Path()
         self.examples_dir = Path()
 
@@ -264,7 +264,7 @@ if __name__ == '__main__':
         return lambda: print("hello world {}".format(filename))
 
     gui = Gui()
-    gui.set_examples_dir("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001")
+    gui.set_examples_dir("../example_videos")
     gui.build()
     gui.add_action(hello)
     gui.assign_action_with_filename_to_play_button()

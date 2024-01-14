@@ -9,7 +9,7 @@ import torch.nn as nn
 from torchvision.transforms import v2
 
 from models.RBM.base import RBM
-from models.RBM.door_data import my_transforms
+from models.RBM.utildata.door_data import my_transforms
 from models.blocks import ReconstructionModel, SegmentationModel
 from models.RBM.settings import DEVICE
 
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     demo = Demo()
 
     video_reader = VideoFrameExtract()
-    video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001/000001.mp4")
+    video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/utildata/videos/Normal-001/000001.mp4")
     frames, _ = video_reader.select_frames(10)
 
     original, reconstructed = demo.forward(frames[0])

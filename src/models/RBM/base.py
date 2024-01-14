@@ -13,8 +13,9 @@ from torchvision.utils import make_grid
 from tqdm import tqdm
 from win11toast import notify
 
-from .settings import DEVICE
-from .door_data import CarDataset, my_transforms
+from .utildata import door_data
+
+DEVICE = torch.device(f"cuda:{torch.cuda.current_device()}" if torch.cuda.is_available() else "cpu")
 
 
 class RBM(nn.Module):
@@ -261,13 +262,13 @@ if __name__ == "__main__":
 
     # parts = ["front_right_door", "hood"],
     input_shape = (128, 128)
-    datas = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    datas = door_data.CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
         parts=["hood", "front_glass", "back_glass", "left_mirror", "right_mirror",
                "front_left_door", "front_right_door", "back_left_door", "back_left_light",
                "back_right_door", "back_right_light"],
-        transform=my_transforms
+        transform=door_data.my_transforms
     )
     #
     print(f'datas size {len(datas)}')
@@ -281,7 +282,7 @@ if __name__ == "__main__":
     # for number, batch in enumerate(datas):
     #     print(batch.shape)
     #     # batch = batch.resize((1, 128, 128))
-    #     make_visible(batch).save(f"C:/Users/dabro/PycharmProjects/scientificProject/data/transformed/image_{number}.jpg")
+    #     make_visible(batch).save(f"C:/Users/dabro/PycharmProjects/scientificProject/utildata/transformed/image_{number}.jpg")
     #
     #
     # import sys
@@ -302,8 +303,8 @@ if __name__ == "__main__":
     # # 6
     #
     # test_data = DoorsDataset3(
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
     #     transform=door_transforms
     # )
     #
@@ -314,8 +315,8 @@ if __name__ == "__main__":
     # test(my_model, train_loader, "on_train.jpg")
     #
     # datas_test = DoorsDataset3(
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
     #     transform=door_transforms
     # )
     #
@@ -335,8 +336,8 @@ if __name__ == "__main__":
     # # img.show()
 
     # datas = DoorsDataset3(
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
     #     transform=door_transforms
     # )
     # datas = DoorsDatasetFromFiles(
@@ -361,55 +362,55 @@ if __name__ == "__main__":
     # epochs number 11
     train(my_model, train_loader, 0.001, 1, datas.get_parts(), torch.optim.SGD)
 
-    test_data = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+    test_data = door_data.CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
         parts=["hood"],
-        transform=my_transforms
+        transform=door_data.my_transforms
     )
-    print(f'test data size {len(test_data)}')
+    print(f'test utildata size {len(test_data)}')
     test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
 
     test(my_model, test_loader, "on_test_new_", None, ["hood"])
 
-    test_data = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+    test_data = door_data.CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
         parts=["front_glass"],
-        transform=my_transforms
+        transform=door_data.my_transforms
     )
 
     test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
 
     test(my_model, test_loader, "on_test_new_", None, ["front_glass"])
 
-    test_data = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+    test_data = door_data.CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
         parts=["left_mirror"],
-        transform=my_transforms
+        transform=door_data.my_transforms
     )
 
     test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
 
     test(my_model, test_loader, "on_test_new_", None, ["left_mirror"])
 
-    test_data = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+    test_data = door_data.CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
         parts=["front_left_door"],
-        transform=my_transforms
+        transform=door_data.my_transforms
     )
 
     test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
 
     test(my_model, test_loader, "on_test_new_", None, ["front_left_door"])
 
-    test_data = CarDataset(
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
-        "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
+    test_data = door_data.CarDataset(
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/",
+        "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/testset/annotations.json",
         parts=["back_left_light"],
-        transform=my_transforms
+        transform=door_data.my_transforms
     )
 
     test_loader = DataLoader(dataset=test_data, batch_size=1, shuffle=True)
@@ -423,7 +424,7 @@ if __name__ == "__main__":
     #     print(batch.shape)
     #     # batch = batch.resize((1, 128, 128))
     #     make_visible(batch).save(
-    #         f"C:/Users/dabro/PycharmProjects/scientificProject/data/transformed_test/image_{number}.jpg")
+    #         f"C:/Users/dabro/PycharmProjects/scientificProject/utildata/transformed_test/image_{number}.jpg")
     #
     # import sys
     #
@@ -467,8 +468,8 @@ if __name__ == "__main__":
     # test(my_model, train_loader, f"on_train_k_my_tr_{test_k}.jpg", f"loss_on_train_my_tr_k_{test_k}.jpg", k=test_k)
 
     # datas_test = DoorsDataset3(
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
-    #     "C:/Users/dabro/PycharmProjects/scientificProject/data/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/",
+    #     "C:/Users/dabro/PycharmProjects/scientificProject/utildata/Car-Parts-Segmentation-master/Car-Parts-Segmentation-master/trainingset/annotations.json",
     #     parts=["front_left_door", 'front_right_door', 'hood', "front_bumper", 'back_bumper', 'tailgate'],
     #     transform=train_transforms
     # )
