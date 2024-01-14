@@ -55,7 +55,6 @@ class SegmentationModel:
         img_scaled_arr = self.preprocess_image(frame)
         print(frame.size)
         image = np.expand_dims(img_scaled_arr[0], axis=0)
-        # FIXME(11jolek11): pr_mask bad z dimensions
         pr_mask = self.model.predict(image).squeeze()
         pr_mask_int = np.zeros((pr_mask.shape[0], pr_mask.shape[1]))
         kernel = np.ones((5, 5), 'uint8')
@@ -65,8 +64,6 @@ class SegmentationModel:
             if sum(sum(op == 1)) > 100:
                 tags.append(i)
                 pr_mask_int[op == 1] = i
-
-        # img_segmented = np.array(Image.fromarray(pr_mask_int[:img_scaled_arr[1], :img_scaled_arr[2]]).resize(frame.size))
 
         return frame, pr_mask, self.get_class_names_to_slice(self.class_names, tags)
 

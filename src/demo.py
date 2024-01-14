@@ -272,13 +272,6 @@ if __name__ == "__main__":
     video_reader = VideoFrameExtract()
     video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/data/videos/Normal-001/000001.mp4")
     frames, _ = video_reader.select_frames(10)
-    # fr, recon_dict = demo.forward(frames[0])
-    # print(type(fr))
-    # cv2.imshow("fr", fr)
-    # cv2.waitKey(0)
-
-    # test_image = recon_dict[random.choice(list(recon_dict.keys()))]
-    # test_image.show()
 
     original, reconstructed = demo.forward(frames[0])
 
@@ -286,14 +279,9 @@ if __name__ == "__main__":
     label = random.choice(list(reconstructed.keys()))
 
     img = Image.fromarray(original)
-    # img.show(f"Image of original {label}")
 
-    # reconstructed[label]["recon"].show(f"Image of reconstructed {label}")
     print(reconstructed[label]["recon"].size)
 
-    # reconstructed[label]["recon"].show(f"Image of reconstructed {label}")
-
-    # color_coverted = cv2.cvtColor(reconstructed[label]["cutoff"], cv2.COLOR_BGR2RGB)
     color_coverted = reconstructed[label]["cutoff"]
     cv2.imshow("lol", color_coverted)
     cv2.waitKey(0)

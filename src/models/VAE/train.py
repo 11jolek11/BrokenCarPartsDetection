@@ -57,5 +57,6 @@ def inference(digit, num_examples=1):
         out = out.view(-1, 1, 28, 28)
         save_image(out, f"generated_{digit}_ex{example}.png")
 
+
 for idx in range(10):
     inference(idx, num_examples=5)

@@ -66,6 +66,3 @@ class PartsDataset(Dataset):
 
     def __getitem__(self, index):
         return list(self.reconstructed_parts.values())[index]
-
-
-
