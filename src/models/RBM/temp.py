@@ -1,26 +1,12 @@
-import os
-import shutil
-from datetime import datetime
-import uuid
-from tqdm import tqdm
-from alive_progress import alive_bar
-
-import numpy as np
-import torch
-import torchvision.transforms as T
-from torch import nn
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
-from torchvision.utils import make_grid
-import matplotlib.pyplot as plt
-from pathlib import Path
 
-from door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2, CarDataset, train_transforms
-from src.settings import DEVICE
-
+from door_data import CarDataset, train_transforms
 
 from base import RBM, InspectModel, test
+from torch.utils.data import DataLoader
 
+from base import RBM, InspectModel, test
+from door_data import CarDataset, train_transforms
 
 inspc = InspectModel(RBM, ["epochs_number", "train series UUID", "parts"],
                          "C:/Users/dabro/OneDrive/Pulpit/test_trained/RBM_cuda_12_10_2023_16_07_27_uuid_4aff48c0.pth"

@@ -1,14 +1,12 @@
 import tkinter as tk
+from functools import partial
+from pathlib import Path
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename
-from pathlib import Path
-from PIL import ImageTk, Image
-from functools import partial
-import copy
 
-import cv2
-import numpy as np
 import PIL
+import cv2
+from PIL import ImageTk, Image
 
 MAX_EXAMPLE_VIDS = 4
 
@@ -260,12 +258,6 @@ class Gui:
         self._root.mainloop()
 
 
-# if __name__ == '__main__':
-#     gui = Gui()
-#     gui.build()
-#     gui.run()
-
-
 if __name__ == '__main__':
 
     def hello(filename):
@@ -276,18 +268,5 @@ if __name__ == '__main__':
     gui.build()
     gui.add_action(hello)
     gui.assign_action_with_filename_to_play_button()
-
-    # C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png
-    # C:/Users/dabro/OneDrive/Obrazy/IMG_0001_3 ret.jpg
-
-    # image = Image.open(r"C:/Users/dabro/OneDrive/Obrazy/plan_sem5_back.png")
-    # image = image.resize((128, 128))
-    #
-    # gui.push_record_on_scroll("Test1", image, image, "broken")
-    #
-    # print(len(gui.results))
-    #
-    # root = gui.get_root()
-    # print(root.children)
 
     gui.run()

@@ -1,12 +1,13 @@
 # README FIRST !!!
 # Kod testowy
-from torchvision.transforms import v2
-from transforms import GaussianBlur, BilateralFilter, Erode, Canny, FindBoundingBoxAndCrop, Resize, Binarize, ColorToHSV, RemoveInnerContours
 import torch
-from door_data import CarDataset
-from torchvision.utils import make_grid
 import torchvision.transforms as T
+from torchvision.transforms import v2
+from torchvision.utils import make_grid
 
+from door_data import CarDataset
+from transforms import GaussianBlur, BilateralFilter, Canny, FindBoundingBoxAndCrop, Resize, Binarize, ColorToHSV, \
+    RemoveInnerContours
 
 clear_transforms = v2.Compose([
     GaussianBlur((13, 13)),

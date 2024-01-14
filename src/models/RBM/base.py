@@ -1,11 +1,8 @@
 import os
-import shutil
-from datetime import datetime
 import uuid
-from tqdm import tqdm
-from alive_progress import alive_bar
-from win11toast import notify
+from datetime import datetime
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision.transforms as T
@@ -13,11 +10,11 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
-import matplotlib.pyplot as plt
-from pathlib import Path
+from tqdm import tqdm
+from win11toast import notify
 
-from .door_data import DoorsDataset2, DoorsDataset3, door_transforms, door_transforms2, CarDataset, train_transforms, my_transforms
 from src.settings import DEVICE
+from .door_data import CarDataset, my_transforms
 
 
 class RBM(nn.Module):

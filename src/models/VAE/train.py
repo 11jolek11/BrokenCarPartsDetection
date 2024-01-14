@@ -1,11 +1,11 @@
 import torch
 import torchvision.datasets as datasets  # Standard datasets
-from tqdm import tqdm
 from torch import nn, optim
-from model import VariationalAutoEncoder
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.utils import save_image
-from torch.utils.data import DataLoader
+
+from model import VariationalAutoEncoder
 
 # Configuration
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

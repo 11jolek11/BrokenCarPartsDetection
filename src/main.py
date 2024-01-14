@@ -1,9 +1,9 @@
 import PIL.Image
-
-from gui import Gui
-from demo import Demo
-from video import VideoFrameExtract
 import numpy as np
+
+from demo import Demo
+from gui import Gui
+from video import VideoFrameExtract
 
 
 class Main:

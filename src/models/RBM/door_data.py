@@ -3,7 +3,6 @@ import uuid
 from pathlib import Path
 
 from pycocotools.coco import COCO
-from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision.transforms import v2
 

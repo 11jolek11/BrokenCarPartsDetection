@@ -1,26 +1,21 @@
-import random
+import copy
+import os
+from pathlib import Path
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from tqdm import tqdm
-from torchvision.transforms import v2
-from settings import DEVICE
-import copy
-
-
-from models.blocks import ReconstructionModel, SegmentationModel
-from models.RBM.base import RBM
-from models.RBM.door_data import my_transforms, my_transforms_only_image
-from pathlib import Path
-import os
 import torch.nn as nn
 from torchvision.transforms import v2
 
+from models.RBM.base import RBM
+from models.RBM.door_data import my_transforms
+from models.blocks import ReconstructionModel, SegmentationModel
+from settings import DEVICE
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 import segmentation_models as sm
-from torch.utils.data import Dataset, ConcatDataset, DataLoader, random_split
+from torch.utils.data import Dataset
 import torch
 
 

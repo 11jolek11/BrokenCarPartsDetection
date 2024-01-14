@@ -1,16 +1,14 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
-from models.RBM.base import RBM
-import models.RBM.transforms as transforms
-from pycocotools.coco import COCO
+from torch.utils.data import Dataset
+import os
 from pathlib import Path
-import numpy as np
+
 import cv2
-from demo import Demo, DemoTransform
+from torch.utils.data import Dataset
+
+from demo import DemoTransform
+from models.RBM.base import RBM
 from models.RBM.door_data import my_transforms
 from src.models.blocks import SegmentationModel, ReconstructionModel
-import os
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 

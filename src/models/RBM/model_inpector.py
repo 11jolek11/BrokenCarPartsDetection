@@ -1,10 +1,10 @@
+import torch
+import torchvision.transforms as T
 from torch.utils.data import DataLoader
+
 from base import RBM
 from door_data import DoorsDataset3, door_transforms
-import torchvision.transforms as T
-import torch
 from src.settings import DEVICE
-
 
 model = RBM(128*128, 128*128+600, k=33)
 model.load_state_dict(torch.load("../../../models/RBM_cuda_12_04_2023_17_58_47.pth")['model_state_dict'])
