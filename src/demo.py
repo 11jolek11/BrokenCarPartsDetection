@@ -8,10 +8,10 @@ import numpy as np
 import torch.nn as nn
 from torchvision.transforms import v2
 
-from models.RBM.base import RBM
-from models.RBM.utildata.door_data import my_transforms
-from models.blocks import ReconstructionModel, SegmentationModel
-from models.RBM.settings import DEVICE
+from .models.RBM.base import RBM
+from .models.RBM.utildata.door_data import my_transforms
+from .models.blocks import ReconstructionModel, SegmentationModel
+from .models.RBM.settings import DEVICE
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 import segmentation_models as sm
@@ -56,8 +56,8 @@ class DemoTransform(Dataset):
 
 class Demo:
     def __init__(self, target_size=(512, 512), rbm_model_uuid: str = "f509f783", unet_model_uuid: str = "kxB53MMd"):
-        self.recon_model_path = Path("../model_zoo/RBM/RBM_cuda_12_28_2023_14_41_54_uuid_{}.pth".format(rbm_model_uuid))
-        self.segmentation_model_path = Path("../model_zoo/UNet/unet_colab_t4_{}.h5".format(unet_model_uuid))
+        self.recon_model_path = Path("model_zoo/RBM/RBM_cuda_12_28_2023_14_41_54_uuid_{}.pth".format(rbm_model_uuid))
+        self.segmentation_model_path = Path("model_zoo/UNet/unet_colab_t4_{}.h5".format(unet_model_uuid))
 
         # ['_background_', 'back_bumper', 'back_glass', 'back_left_door', 'back_left_light', 'back_right_door',
         # 'back_right_light', 'front_bumper', 'front_glass', 'front_left_door', 'front_left_light', 'front_right_door',

@@ -264,7 +264,7 @@ if __name__ == '__main__':
         return lambda: print("hello world {}".format(filename))
 
     gui = Gui()
-    gui.set_examples_dir("../example_videos")
+    gui.set_examples_dir("example_videos/")
     gui.build()
     gui.add_action(hello)
     gui.assign_action_with_filename_to_play_button()

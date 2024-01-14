@@ -1,15 +1,15 @@
 import PIL.Image
 import numpy as np
 
-from demo import Demo
-from gui import Gui
-from video import VideoFrameExtract
+from .demo import Demo
+from .gui import Gui
+from .video import VideoFrameExtract
 
 
 class Main:
     def __init__(self):
         self.gui = Gui()
-        self.gui.set_examples_dir("../example_videos")
+        self.gui.set_examples_dir("./example_videos")
         self.gui.build()
         self.demo = Demo()
         self.video_reader = VideoFrameExtract()
