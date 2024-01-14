@@ -11,7 +11,7 @@ from torchvision.transforms import v2
 from models.RBM.base import RBM
 from models.RBM.door_data import my_transforms
 from models.blocks import ReconstructionModel, SegmentationModel
-from src.models.RBM.settings import DEVICE
+from models.RBM.settings import DEVICE
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 import segmentation_models as sm
@@ -55,10 +55,9 @@ class DemoTransform(Dataset):
 
 
 class Demo:
-    def __init__(self, target_size=(512, 512)):
-        self.recon_model_path = Path(
-            "C:/Users/dabro/PycharmProjects/scientificProject/models/RBM_cuda_12_28_2023_14_41_54_uuid_f509f783.pth")
-        self.segmentation_model_path = Path("C:/Users/dabro/Downloads/best_model (1).h5")
+    def __init__(self, target_size=(512, 512), rbm_model_uuid: str = "f509f783", unet_model_uuid: str = "kxB53MMd"):
+        self.recon_model_path = Path("../model_zoo/RBM/RBM_cuda_12_28_2023_14_41_54_uuid_{}.pth".format(rbm_model_uuid))
+        self.segmentation_model_path = Path("../model_zoo/UNet/unet_colab_t4_{}.h5".format(unet_model_uuid))
 
         # ['_background_', 'back_bumper', 'back_glass', 'back_left_door', 'back_left_light', 'back_right_door',
         # 'back_right_light', 'front_bumper', 'front_glass', 'front_left_door', 'front_left_light', 'front_right_door',
@@ -69,8 +68,6 @@ class Demo:
                             'front_right_door',
                             'front_right_light', 'hood', 'left_mirror', 'right_mirror', 'tailgate', 'trunk', 'wheel']
 
-        assert (len(self.class_names) == 19)
-
         self.seg_model = sm.Unet
         self.recon_model = RBM
 
@@ -78,7 +75,7 @@ class Demo:
         # (128 * 128, 128*128, k=3)
 
         self.seg_block = SegmentationModel(self.class_names, self.seg_model, self.segmentation_model_path,
-                                           'resnet18', classes=19, activation='softmax')
+                                           'resnet18', classes=len(self.class_names), activation='softmax')
 
         self.recon_block = ReconstructionModel(RBM, self.recon_model_path, 128 * 128, 128 * 128, k=3)
 
@@ -156,8 +153,6 @@ class DisDataset(Dataset):
             for item in list(recon.values()):
                 if self.transform:
                     item = self.transform(item)
-
-                    # FIXME(11jolek11): self.data_type is int not torch.Tensor with dtype.float32
                 self.clear_recon.append(item)
 
     def __len__(self):
@@ -289,4 +284,3 @@ if __name__ == "__main__":
     color_coverted = color_coverted.astype(np.uint8)
     a = Image.fromarray(color_coverted)
     a.show()
-

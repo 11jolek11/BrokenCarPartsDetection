@@ -13,8 +13,8 @@ from torchvision.utils import make_grid
 from tqdm import tqdm
 from win11toast import notify
 
-from settings import DEVICE
-from door_data import CarDataset, my_transforms
+from .settings import DEVICE
+from .door_data import CarDataset, my_transforms
 
 
 class RBM(nn.Module):
