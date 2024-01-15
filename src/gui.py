@@ -89,7 +89,7 @@ def play_video(video_path: str):
 class Gui:
     def __init__(self):
         self._root = tk.Tk()
-        self._root.geometry("900x700")
+        self._root.geometry("900x900")
         self._filepath = Path()
         self.examples_dir = Path()
 
@@ -98,6 +98,9 @@ class Gui:
 
         self._temp_original_img_frame = []
         self._temp_recon_img_frame = []
+
+        self.user_frame = tk.Frame(self._root)
+        self.file_path_frame = ttk.Label(self.user_frame, text="File Path: ")
 
         self.results = []
 
@@ -161,6 +164,8 @@ class Gui:
         self._filepath = Path(choice)
         print("Chosen filename: ", str(self._filepath))
         self.assign_action_with_filename_to_play_button()
+        self.file_path_frame.configure(text="File Path:{}".format(str(self._filepath)))
+        self.file_path_frame.update()
 
     def create_run_frame(self, parent_frame):
         frame = ttk.Frame(parent_frame, width=200, height=200)
@@ -174,6 +179,12 @@ class Gui:
         self.run_btn.pack(side=tk.LEFT, fill=tk.X)
 
         return frame
+
+    def change_file_path(self, file_path):
+        self._filepath = Path(file_path)
+        self.file_path_frame.configure(text="File Path:{}".format(str(self._filepath)))
+        self.file_path_frame.update()
+        self.assign_action_with_filename_to_play_button()
 
     def create_example_videos_frame(self, parent_frame):
         frame = ttk.Frame(parent_frame, width=150, height=150)
@@ -195,10 +206,19 @@ class Gui:
 
             print(str(video["file"].absolute()))
 
-            preview_button = ttk.Button(subframe, text='Preview',
+            button_frame = ttk.Frame(subframe)
+
+            preview_button = ttk.Button(button_frame, text='Preview',
                                         command=partial(play_video, str(video["file"].absolute())))
 
-            preview_button.pack(side=tk.RIGHT)
+            preview_button.pack(side=tk.TOP)
+
+            click_button = ttk.Button(button_frame, text='Click',
+                                      command=partial(self.change_file_path, str(video["file"].absolute())))
+
+            click_button.pack(side=tk.BOTTOM)
+
+            button_frame.pack(side=tk.RIGHT)
 
             subframe.pack()
 
@@ -209,7 +229,7 @@ class Gui:
 
         legend_frame = ttk.Frame(frame)
 
-        legend_names = ["Część", "Orginał", "Rekonstrukcja", "Status"]
+        legend_names = ["Część", "Orginał", "Rekonstrukcja", "ID ramki źródłowej"]
         legend_labels = []
 
         for legend in legend_names:
@@ -244,17 +264,20 @@ class Gui:
         return frame
 
     def build(self):
-        user_frame = tk.Frame(self._root)
+        self.create_run_frame(self.user_frame).pack(anchor=tk.NW)
 
-        self.create_run_frame(user_frame).pack(anchor=tk.NW)
-        frame = self.create_example_videos_frame(user_frame)
+        frame = self.create_example_videos_frame(self.user_frame)
         frame.pack(anchor=tk.W, expand=True)
 
-        user_frame.pack(side=tk.LEFT)
+        self.user_frame.pack(side=tk.LEFT)
+
+        # self.file_path_frame.pack(anchor=tk.S, expand=True, fill=tk.Y)
+        self.file_path_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.Y)
 
         self.create_presentation_frame(self._root).pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
     def run(self):
+        self._root.state('zoomed')
         self._root.mainloop()
 
 
