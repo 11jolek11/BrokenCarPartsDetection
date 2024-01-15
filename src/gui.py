@@ -133,10 +133,11 @@ class Gui:
         self.run_btn.configure(command=self.run_action(self._filepath))
 
     def _create_result_frame(self, parent_frame, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image,
-                             state: str):
+                             state: str, classification: str):
         frame = ttk.Frame(parent_frame)
         part_name_label = ttk.Label(frame, text=part_name)
         state_label = ttk.Label(frame, text=state)
+        class_label = ttk.Label(frame, text=classification)
 
         original_img_frame = ImageTk.PhotoImage(original_frame)
         self._temp_original_img_frame.append(original_img_frame)
@@ -150,11 +151,12 @@ class Gui:
         original_img_label.pack(side=tk.LEFT)
         recon_img_label.pack(side=tk.LEFT)
         state_label.pack(side=tk.LEFT)
+        class_label.pack(side=tk.LEFT)
 
         return frame
 
-    def push_record_on_scroll(self, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image, state: str):
-        frame = self._create_result_frame(self._scrollable_frame, part_name, original_frame, recon_frame, state)
+    def push_record_on_scroll(self, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image, state: str, classification:str):
+        frame = self._create_result_frame(self._scrollable_frame, part_name, original_frame, recon_frame, state, classification)
         self.results.append(frame)
         frame.pack()
         self._root.update()
@@ -229,7 +231,7 @@ class Gui:
 
         legend_frame = ttk.Frame(frame)
 
-        legend_names = ["Część", "Orginał", "Rekonstrukcja", "ID ramki źródłowej"]
+        legend_names = ["Część", "Orginał", "Rekonstrukcja", "ID ramki źródłowej", "Stan"]
         legend_labels = []
 
         for legend in legend_names:

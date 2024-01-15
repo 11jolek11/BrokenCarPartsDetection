@@ -10,10 +10,10 @@ from torchvision.transforms import v2
 from torch.utils.data import DataLoader, ConcatDataset, random_split
 from win11toast import notify
 
-from models.RBM.base import RBM
-from models.RBM.utildata.door_data import my_transforms
-from models.blocks import ReconstructionModel, SegmentationModel
-from models.RBM.settings import DEVICE
+from .models.RBM.base import RBM
+from .models.RBM.utildata.door_data import my_transforms
+from .models.blocks import ReconstructionModel, SegmentationModel
+from .models.RBM.settings import DEVICE
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 import segmentation_models as sm
@@ -122,6 +122,24 @@ class Demo:
         return frame, reconstructed_parts
 
 
+class DisHandle:
+    def __init__(self, model_path: str = "./model_zoo/Discr/dis_model.pth") -> None:
+        self.model_path = Path(model_path)
+        self.model = Dis(2)
+
+        temp = torch.load(str(self.model_path.absolute()))
+
+        self.mapper = temp["map"]
+
+        self.model.load_state_dict(temp["model"])
+
+    def classify(self, diff: list[str, int]) -> float:
+        diff[0] = self.mapper[diff[0]][0].item()
+        # FIXME(11jolek11): TypeError: linear(): argument 'input' (position 1) must be Tensor, not list
+        diff = torch.FloatTensor(diff)
+        return self.model(diff).item()
+
+
 class DisDataset(Dataset):
     def __init__(self, data_path: str | Path, supplier: Demo, data_type: Literal[0, 1], transform=None):
         if not Path(data_path).is_dir():
@@ -168,7 +186,7 @@ class DisDataset(Dataset):
                 self.data.append([part, diff])
                 self.target.append(self.data_type)
 
-        for index, element in enumerate(list(self.unique_parts)):
+        for index, element in enumerate(list(sorted(self.unique_parts))):
             self.mapper[element] = index
 
         for y in range(len(self.data)):
@@ -181,11 +199,14 @@ class DisDataset(Dataset):
 
         print(f"Data shape {self.data.shape}")
 
+    def get_map(self):
+        return self.mapper
+
     def __len__(self):
         return self.data.shape[0]
 
     def __getitem__(self, index):
-        return self.data[index], self.target[index]
+        return self.data[index], self.target[index], self.get_map()
 
         # for recon in range(len(recon_dict.values())):
         #     recon_counter += 1
@@ -228,6 +249,8 @@ class Dis(nn.Module):
 def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
     model = model.to(DEVICE)
 
+    return_mapper = None
+
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     model.train()
@@ -239,9 +262,12 @@ def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
         total_loss = 0.0
 
         print(len(train_data_loader))
-        for batch, labels in train_data_loader:
+        for batch, labels, mapper in train_data_loader:
             print(f"Batch type: {type(batch)}")
             print(f"Labels type: {type(labels)}")
+
+            return_mapper = mapper
+
             batch = batch.to(DEVICE)
             labels = labels.to(DEVICE)
             optimizer.zero_grad()
@@ -267,7 +293,12 @@ def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
 
         train_losses.append(total_loss)
 
-    torch.save(model.state_dict(), './dis_model.pth')
+    torch.save(
+        {
+            "model": model.state_dict(),
+            "map": return_mapper
+        },
+        '../model_zoo/Discr/dis_model.pth')
     notify("Discr model finish", scenario='incomingCall')
     return model, train_losses
 
@@ -277,7 +308,7 @@ def test_dis(model, test_data_loader, loss_function):
 
     losses = []
 
-    for batch, labels in test_data_loader:
+    for batch, labels, _ in test_data_loader:
         labels = labels.to(DEVICE)
         batch = batch.to(DEVICE)
 

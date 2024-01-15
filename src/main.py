@@ -1,9 +1,10 @@
 import PIL.Image
 import numpy as np
 
-from .demo import Demo
+from .demo import Demo, DisHandle
 from .gui import Gui
 from .video import VideoFrameExtract
+import cv2
 
 
 class Main:
@@ -13,6 +14,7 @@ class Main:
         self.gui.build()
         self.demo = Demo()
         self.video_reader = VideoFrameExtract()
+        self.dishandle = DisHandle()
 
         self.runner = None
 
@@ -27,7 +29,14 @@ class Main:
                     cutoff = PIL.Image.fromarray(reconstructed[part]["cutoff"].astype(np.uint8))
                     recon = reconstructed[part]["recon"]
 
-                    self.gui.push_record_on_scroll(part, cutoff, recon, str(frame_no))
+                    recon_np = np.array(recon)
+                    transformed_part_np = np.array(reconstructed[part]["transformed_part"])
+
+                    diff_img = cv2.subtract(recon_np, transformed_part_np)
+                    diff = int(np.argwhere(diff_img > 0).shape[0])
+                    classification = self.dishandle.classify([part, diff])
+
+                    self.gui.push_record_on_scroll(part, cutoff, recon, str(frame_no), str(classification))
 
         return lambda: internal(file_name)
 
