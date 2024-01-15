@@ -58,7 +58,6 @@ https://github.com/PaddlePaddle/PaddleSeg
 https://github.com/facebookresearch/segment-anything
 
 ############################################333
-https://staff.fnwi.uva.nl/e.peerbooms/rbm.html
 https://github.com/bacnguyencong/rbm-pytorch/blob/master/rbm.py
 https://blog.paperspace.com/beginners-guide-to-boltzmann-machines-pytorch/
 https://github.com/mr-easy/Restricted-Boltzmann-Machine/blob/master/rbm_mnist_example.ipynb

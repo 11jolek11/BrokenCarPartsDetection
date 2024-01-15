@@ -115,7 +115,7 @@ def train(model, data_loader, lr, epochs_number: int, parts: [str], optimizer, *
         # for batch in data_loader:
         with tqdm(data_loader, unit="batch") as tepoch:
             for batch in tepoch:
-                # NOTE: technicznie to nie batch tylko pojedyncze zdjęcie bo na tym RBM się może uczyć
+                # NOTE(11jolek11): technicznie to nie batch tylko pojedyncze zdjęcie bo na tym RBM się może uczyć
                 # poza tym cały dataset mógłby nie zmieścić się w pamięci
         # with alive_bar(len(data_loader), title=f"Epoch [{epoch}/{epochs_number}] ") as bar:
         #     for batch in data_loader:
@@ -208,6 +208,7 @@ def test(model, data_loader, file_name, loss_file_name, parts, size=128, k=None)
     img.save("C:/Users/dabro/PycharmProjects/scientificProject/images_cache/" + file_name)
     print(f"Image saved to {file_name}")
 
+
 def test3(model, data_loader, file_name, loss_file_name, parts, size=128):
     model = model.eval()
     model = model.to(DEVICE)
@@ -244,21 +245,6 @@ def test3(model, data_loader, file_name, loss_file_name, parts, size=128):
 
 
 if __name__ == "__main__":
-
-    # back_right_door - - 29
-    # back_right_light - - 20
-    # front_bumper - - 74
-    # front_glass - - 74
-    # front_left_door - - 35
-    # front_left_light - - 62
-    # front_right_door - - 39
-    # front_right_light - - 67
-    # hood - - 74
-    # left_mirror - - 55
-    # right_mirror - - 60
-    # tailgate - - 7
-    # trunk - - 18
-    # wheel - - 76
 
     # parts = ["front_right_door", "hood"],
     input_shape = (128, 128)
