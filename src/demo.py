@@ -7,13 +7,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
 from torchvision.transforms import v2
+from torch.utils.data import DataLoader, ConcatDataset, random_split
+from win11toast import notify
 
 from models.RBM.base import RBM
 from models.RBM.utildata.door_data import my_transforms
 from models.blocks import ReconstructionModel, SegmentationModel
 from models.RBM.settings import DEVICE
 
-from sklearn.preprocessing import LabelEncoder
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 import segmentation_models as sm
 from torch.utils.data import Dataset
@@ -131,8 +132,6 @@ class DisDataset(Dataset):
         self.data_type = data_type
         self.transform = transform
 
-        self.label_encoder = LabelEncoder()
-
         self._available_files = list(self.data_path.glob('*.jpg'))
 
         # TODO(11jolek11): Change this garbage code! ASAP
@@ -168,16 +167,19 @@ class DisDataset(Dataset):
                 diff = np.argwhere(diff_img > 0).shape[0]
                 self.data.append([part, diff])
                 self.target.append(self.data_type)
-        self.data = np.asarray(self.data)
-        self.target = np.asarray(self.target)
+
+        for index, element in enumerate(list(self.unique_parts)):
+            self.mapper[element] = index
+
+        for y in range(len(self.data)):
+            self.data[y][0] = self.mapper[self.data[y][0]]
+
+        self.data = np.array(self.data, dtype=np.float32)
+        self.target = np.array(self.target, dtype=np.float32)
 
         assert (self.data.shape[0] == self.target.shape[0])
 
-        self.label_encoder.fit(list(self.unique_parts))
-        self.mapper = dict(zip(self.label_encoder.classes_, range(len(self.label_encoder.classes_))))
-
         print(f"Data shape {self.data.shape}")
-        self.data[:, 0] = self.label_encoder.transform(self.data[:, 0])
 
     def __len__(self):
         return self.data.shape[0]
@@ -226,7 +228,7 @@ class Dis(nn.Module):
 def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
     model = model.to(DEVICE)
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     model.train()
 
@@ -240,7 +242,6 @@ def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
         for batch, labels in train_data_loader:
             print(f"Batch type: {type(batch)}")
             print(f"Labels type: {type(labels)}")
-            labels = labels.reshape(-1, 1)
             batch = batch.to(DEVICE)
             labels = labels.to(DEVICE)
             optimizer.zero_grad()
@@ -255,6 +256,10 @@ def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
             temp = v2.ToDtype(dtype=torch.float, scale=False)
             labels = temp(labels)
 
+            m = nn.Sigmoid()
+
+            labels = labels.unsqueeze(1)
+
             loss = loss_function(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -263,6 +268,7 @@ def train_dis(model: Dis, train_data_loader, loss_function, lr, epochs=40):
         train_losses.append(total_loss)
 
     torch.save(model.state_dict(), './dis_model.pth')
+    notify("Discr model finish", scenario='incomingCall')
     return model, train_losses
 
 
@@ -271,11 +277,16 @@ def test_dis(model, test_data_loader, loss_function):
 
     losses = []
 
-    for _, data in enumerate(test_data_loader):
-        inputs, labels = data
-        outputs = model(inputs)
+    for batch, labels in test_data_loader:
+        labels = labels.to(DEVICE)
+        batch = batch.to(DEVICE)
+
+        labels = labels.unsqueeze(1)
+
+        outputs = model(batch)
+
         loss = loss_function(outputs, labels)
-        losses.append(loss)
+        losses.append(loss.item())
 
     plt.plot(losses)
     plt.title("Loss Function on test")
@@ -331,40 +342,32 @@ if __name__ == "__main__":
     broken_path = "C:/Users/dabro/PycharmProjects/scientificProject/data/damaged/data1a/training/00-damage"
 
     # data_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    model = Dis(128 * 128)
+    model = Dis(2)
 
     temp_good = DisDataset(path, demo, 1, transform=img_transformer)
     temp_bad = DisDataset(broken_path, demo, 0, transform=img_transformer)
 
-    for i in range(10):
-        print(temp_good[i])
+    test_prop = 0.2
 
-
-
-
-
-
-    # test_prop = 0.2
+    good, good_test = random_split(temp_good, split_len(temp_good, test_prop))
+    bad, bad_test = random_split(temp_bad, split_len(temp_bad, test_prop))
     #
-    # good, good_test = random_split(temp_good, split_len(temp_good, test_prop))
-    # bad, bad_test = random_split(temp_bad, split_len(temp_bad, test_prop))
-    #
-    # con = ConcatDataset([good, bad])
-    # con_test = ConcatDataset([good_test, bad_test])
-    #
+    con = ConcatDataset([good, bad])
+    con_test = ConcatDataset([good_test, bad_test])
+
     # # train_data_loader = DataLoader(con, batch_size=1, shuffle=True)
     # # test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
     #
-    # train_data_loader = DataLoader(con, batch_size=10, shuffle=True)
-    # test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
-    #
-    # loss_f = torch.nn.BCELoss()
-    #
-    # post_train_model, train_losses = train_dis(model, train_data_loader, loss_f, 0.0001)
-    #
-    # plt.clf()
-    # plt.plot(train_losses)
-    # plt.title("Training Loss")
-    # plt.show()
-    #
-    # test_dis(post_train_model, test_data_loader, loss_f)
+    train_data_loader = DataLoader(con, batch_size=10, shuffle=True)
+    test_data_loader = DataLoader(con_test, batch_size=1, shuffle=True)
+
+    loss_f = torch.nn.BCELoss()
+
+    post_train_model, train_losses = train_dis(model, train_data_loader, loss_f, 0.0001)
+
+    plt.clf()
+    plt.plot(train_losses)
+    plt.title("Training Loss")
+    plt.show()
+
+    test_dis(post_train_model, test_data_loader, loss_f)
