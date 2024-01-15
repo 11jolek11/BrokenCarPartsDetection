@@ -1,11 +1,11 @@
 import torch
 import torchvision.datasets as datasets  # Standard datasets
-from tqdm import tqdm
 from torch import nn, optim
-from model import VariationalAutoEncoder
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.utils import save_image
-from torch.utils.data import DataLoader
+
+from model import VariationalAutoEncoder
 
 # Configuration
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -56,6 +56,7 @@ def inference(digit, num_examples=1):
         out = model.decode(z)
         out = out.view(-1, 1, 28, 28)
         save_image(out, f"generated_{digit}_ex{example}.png")
+
 
 for idx in range(10):
     inference(idx, num_examples=5)

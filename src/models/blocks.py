@@ -1,17 +1,9 @@
-import numpy as np
 from pathlib import Path
+
+import cv2
+import numpy as np
 import torch
 from PIL import Image
-import cv2
-
-
-# class HandleModel:
-#     def __init__(self, model_path: Path) -> None:
-#         self.model_path = model_path
-#         self.model_lib = None
-#         # h5 tensorflow
-#         # pth torch
-#         self.model = None
 
 
 class SegmentationModel:
@@ -29,7 +21,6 @@ class SegmentationModel:
             raise NotImplementedError("Torch models handling is not supported yet")
 
     def preprocess_image(self, img):
-        # img = Image.open(path_img)
         img = Image.fromarray(img.astype('uint8'), 'RGB')
         ww = 512
         hh = 512
@@ -52,8 +43,6 @@ class SegmentationModel:
 
         class_names_colors = enumerate(class_names[:n_classes])
 
-        # print(class_names_colors)
-
         for (i, class_name) in class_names_colors:
             if i in tags:
                 legend[class_name] = i
@@ -75,8 +64,6 @@ class SegmentationModel:
             if sum(sum(op == 1)) > 100:
                 tags.append(i)
                 pr_mask_int[op == 1] = i
-
-        # img_segmented = np.array(Image.fromarray(pr_mask_int[:img_scaled_arr[1], :img_scaled_arr[2]]).resize(frame.size))
 
         return frame, pr_mask, self.get_class_names_to_slice(self.class_names, tags)
 

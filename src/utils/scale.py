@@ -1,6 +1,7 @@
-import cv2
 import os
 from pathlib import Path
+
+import cv2
 
 
 class Scaler:
@@ -44,8 +45,8 @@ class FileManipulator:
 
 
 if __name__ == "__main__":
-    f = FileManipulator("C:/Users/dabro/PycharmProjects/scientificProject/data/from_broken/", "C:/Users/dabro/PycharmProjects/scientificProject/data/from_broken/")
+    f = FileManipulator("C:/Users/dabro/PycharmProjects/scientificProject/utildata/from_broken/", "C:/Users/dabro/PycharmProjects/scientificProject/data/from_broken/")
     f.discover()
     f.apply()
     # sc = Scaler((128, 128))
-    # sc.scale("../data/broken/archive/img/1.jpg", show=True)
+    # sc.scale("../utildata/broken/archive/img/1.jpg", show=True)

@@ -1,16 +1,13 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
-from models.RBM.base import RBM
-import models.RBM.transforms as transforms
-from pycocotools.coco import COCO
-from pathlib import Path
-import numpy as np
-import cv2
-from demo import Demo, DemoTransform
-from models.RBM.door_data import my_transforms
-from src.models.blocks import SegmentationModel, ReconstructionModel
 import os
+from pathlib import Path
+
+import cv2
+from torch.utils.data import Dataset
+
+from demo import DemoTransform
+from models.RBM.base import RBM
+from src.models.RBM.utildata.door_data import my_transforms
+from src.models.blocks import SegmentationModel, ReconstructionModel
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 
@@ -68,6 +65,3 @@ class PartsDataset(Dataset):
 
     def __getitem__(self, index):
         return list(self.reconstructed_parts.values())[index]
-
-
-

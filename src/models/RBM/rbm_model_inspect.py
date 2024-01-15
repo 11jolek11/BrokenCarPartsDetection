@@ -1,7 +1,8 @@
-import torch
 from pathlib import Path
+
+import torch
+
 from base import RBM
-from math import sqrt
 
 
 class InspectModel:
