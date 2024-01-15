@@ -135,7 +135,6 @@ class DisHandle:
 
     def classify(self, diff: list[str, int]) -> float:
         diff[0] = self.mapper[diff[0]][0].item()
-        # FIXME(11jolek11): TypeError: linear(): argument 'input' (position 1) must be Tensor, not list
         diff = torch.FloatTensor(diff)
         return self.model(diff).item()
 
@@ -382,7 +381,8 @@ if __name__ == "__main__":
 
     good, good_test = random_split(temp_good, split_len(temp_good, test_prop))
     bad, bad_test = random_split(temp_bad, split_len(temp_bad, test_prop))
-    #
+
+    # https://discuss.pytorch.org/t/train-simultaneously-on-two-datasets/649/2
     con = ConcatDataset([good, bad])
     con_test = ConcatDataset([good_test, bad_test])
 

@@ -37,13 +37,13 @@ class VideoFrameExtract:
         return self.frames, correct_frame_count
 
 
-if __name__ == '__main__':
-    video_reader = VideoFrameExtract()
-    video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/utildata/videos/Normal-001/000001.mp4")
-    frames, no_of_frames = video_reader.select_frames(10)
-
-    print(f"Frames no.: {no_of_frames}")
-
-    for single_frame in frames:
-        cv2.imshow('frame', single_frame)
-        cv2.waitKey(0)
+# if __name__ == '__main__':
+#     video_reader = VideoFrameExtract()
+#     video_reader.read("C:/Users/dabro/PycharmProjects/scientificProject/utildata/videos/Normal-001/000001.mp4")
+#     frames, no_of_frames = video_reader.select_frames(10)
+#
+#     print(f"Frames no.: {no_of_frames}")
+#
+#     for single_frame in frames:
+#         cv2.imshow('frame', single_frame)
+#         cv2.waitKey(0)

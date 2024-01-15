@@ -14,7 +14,6 @@ os.environ["SM_FRAMEWORK"] = "tf.keras"
 import segmentation_models as sm
 
 
-# https://discuss.pytorch.org/t/train-simultaneously-on-two-datasets/649/2
 class PartsDataset(Dataset):
     def __init__(self, img_dir, parts_state_label: str, transform=None):
         if Path(img_dir).is_dir():
@@ -37,8 +36,6 @@ class PartsDataset(Dataset):
                             'back_right_light', 'front_bumper', 'front_glass', 'front_left_door', 'front_left_light',
                             'front_right_door',
                             'front_right_light', 'hood', 'left_mirror', 'right_mirror', 'tailgate', 'trunk', 'wheel']
-
-        assert (len(self.class_names) == 19)
 
         self.seg_model = sm.Unet
         self.recon_model = RBM

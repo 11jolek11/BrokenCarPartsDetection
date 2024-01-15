@@ -36,7 +36,14 @@ class Main:
                     diff = int(np.argwhere(diff_img > 0).shape[0])
                     classification = self.dishandle.classify([part, diff])
 
-                    self.gui.push_record_on_scroll(part, cutoff, recon, str(frame_no), str(classification))
+                    class_label = ""
+
+                    if classification > 0.5:
+                        class_label = "OK"
+                    else:
+                        class_label = "BROKEN"
+
+                    self.gui.push_record_on_scroll(part, cutoff, recon, str(frame_no), class_label)
 
         return lambda: internal(file_name)
 
