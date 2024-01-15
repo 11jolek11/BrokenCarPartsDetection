@@ -39,8 +39,10 @@ class Main:
                     class_label = ""
 
                     if classification > 0.5:
+                        print("Found OK part")
                         class_label = "OK"
                     else:
+                        print("Found broken part")
                         class_label = "BROKEN"
 
                     self.gui.push_record_on_scroll(part, cutoff, recon, str(frame_no), class_label)

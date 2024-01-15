@@ -89,7 +89,7 @@ def play_video(video_path: str):
 class Gui:
     def __init__(self):
         self._root = tk.Tk()
-        self._root.geometry("900x900")
+        self._root.geometry("800x800")
         self._filepath = Path()
         self.examples_dir = Path()
 
@@ -100,7 +100,7 @@ class Gui:
         self._temp_recon_img_frame = []
 
         self.user_frame = tk.Frame(self._root)
-        self.file_path_frame = ttk.Label(self.user_frame, text="File Path: ")
+        self.file_path_frame = ttk.Label(self.user_frame, text="Wybrany plik: ", wraplength=200)
 
         self.results = []
 
@@ -122,14 +122,14 @@ class Gui:
         return self._root
 
     def assign_action_to_play_button(self, funct):
-        print("Assigning action to play button")
+        print("Add prop. action to play button")
         self.run_btn.configure(command=funct)
 
     def add_action(self, funct):
         self.run_action = funct
 
     def assign_action_with_filename_to_play_button(self):
-        print("Assigning action to play button")
+        print("Add prop. action to play button")
         self.run_btn.configure(command=self.run_action(self._filepath))
 
     def _create_result_frame(self, parent_frame, part_name: str, original_frame: PIL.Image, recon_frame: PIL.Image,
@@ -164,9 +164,9 @@ class Gui:
     def ask_file_path(self):
         choice = askopenfilename()
         self._filepath = Path(choice)
-        print("Chosen filename: ", str(self._filepath))
+        print("Chosen file: ", str(self._filepath))
         self.assign_action_with_filename_to_play_button()
-        self.file_path_frame.configure(text="File Path:{}".format(str(self._filepath)))
+        self.file_path_frame.configure(text="Wybrany plik: {}".format(str(self._filepath)))
         self.file_path_frame.update()
 
     def create_run_frame(self, parent_frame):
@@ -174,7 +174,7 @@ class Gui:
         frame.columnconfigure(0, weight=2)
         frame.columnconfigure(1, weight=1)
 
-        file_upload_btn = ttk.Button(frame, text="Upload", command=self.ask_file_path)
+        file_upload_btn = ttk.Button(frame, text="Lub wgraj własny plik", command=self.ask_file_path)
         file_upload_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
         self.run_btn = ttk.Button(frame, text="Run")
@@ -184,7 +184,7 @@ class Gui:
 
     def change_file_path(self, file_path):
         self._filepath = Path(file_path)
-        self.file_path_frame.configure(text="File Path:{}".format(str(self._filepath)))
+        self.file_path_frame.configure(text="Wybrany plik: {}".format(str(self._filepath)))
         self.file_path_frame.update()
         self.assign_action_with_filename_to_play_button()
 
@@ -215,7 +215,7 @@ class Gui:
 
             preview_button.pack(side=tk.TOP)
 
-            click_button = ttk.Button(button_frame, text='Click',
+            click_button = ttk.Button(button_frame, text='Wybierz mnie!',
                                       command=partial(self.change_file_path, str(video["file"].absolute())))
 
             click_button.pack(side=tk.BOTTOM)
@@ -231,7 +231,12 @@ class Gui:
 
         legend_frame = ttk.Frame(frame)
 
-        legend_names = ["Część", "Orginał", "Rekonstrukcja", "ID ramki źródłowej", "Stan"]
+        legend_names = ["[Część]         ",
+                        "[Orginał]         ",
+                        "[Rekonstrukcja]         ",
+                        "[ID ramki źródłowej]         ",
+                        "[Stan]         "]
+
         legend_labels = []
 
         for legend in legend_names:
@@ -266,12 +271,22 @@ class Gui:
         return frame
 
     def build(self):
-        self.create_run_frame(self.user_frame).pack(anchor=tk.NW)
 
+        readme_label = tk.Label(self.user_frame,
+                                text='''
+                                Wybierz video z przykładów i kliknij "Run"
+                                Można wybrać własny plik
+                                Aby wybrać inne video należy zrestartować aplikację
+                                
+                                Po kliknięciu "Preview" należy nacisnąć "q" aby wyjść
+                                z video przed jego zakończeniem
+                                ''')
+        readme_label.pack()
         frame = self.create_example_videos_frame(self.user_frame)
-        frame.pack(anchor=tk.W, expand=True)
+        frame.pack(anchor=tk.W, expand=False)
 
         self.user_frame.pack(side=tk.LEFT)
+        self.create_run_frame(self.user_frame).pack(anchor=tk.NW)
 
         # self.file_path_frame.pack(anchor=tk.S, expand=True, fill=tk.Y)
         self.file_path_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.Y)
